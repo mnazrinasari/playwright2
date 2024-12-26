@@ -1,20 +1,21 @@
-const { writeToExcel } = require('../utils'); // Import the helper to write to Excel
-const path = require('path'); // Required for resolving file paths
+const { writeProductDataToExcel } = require('../utils');  // Importing the write function from util.js
 
 class CartPage {
     constructor(page) {
         this.page = page;
-
-        // Define locators for cart elements
         this.cartRowsLocator = this.page.locator('tbody tr'); // Rows for each product in the cart
+        this.proceedtoCheckoutpage = this.page.locator('[class="btn btn-default check_out"]');
+        this.pageName = this.page.locator('[class="active"]');
+
     }
 
-    async getCartDetailsAndSaveToExcel() {
+    // Get cart details and save them to an Excel file
+    async getCartDetails() {
         // Fetch the rows of the cart
-        const cartRows = await this.page.locator('tbody tr');
+        const cartRows = await this.cartRowsLocator;
         const cartRowsCount = await cartRows.count();
         let cartDetails = [];
-
+        const cartPageName = await this.pageName.textContent();
         // Loop through each row and collect details
         for (let i = 0; i < cartRowsCount; i++) {
             const row = cartRows.nth(i);
@@ -26,44 +27,29 @@ class CartPage {
             const cartProductPrice = (await row.locator('td p').nth(1).textContent()).replace('Rs. ', '');
             const cartProductQuantity = await row.locator('td button').textContent();
             const cartProductTotal = (await row.locator('td p').nth(2).textContent()).replace('Rs. ', '');
-            const cartProductManualTotal = String(cartProductPrice * cartProductQuantity);
-
+            const cartProductManualTotal = String(cartProductPrice * cartProductQuantity); // Price * Quantity
+            
             // Push product details into the cartDetails array (as an object)
             cartDetails.push({
-                thumbnail: cartProductThumbnail,
-                name: cartProductName,
-                category: cartProductCategory,
-                price: cartProductPrice,
-                quantity: cartProductQuantity,
-                total: cartProductTotal,
-                manualTotal: cartProductManualTotal
+                Page: cartPageName, 
+                Thumbnail: cartProductThumbnail,
+                Name: cartProductName,
+                Category: cartProductCategory,
+                Price: cartProductPrice,
+                Quantity: cartProductQuantity,
+                Total: cartProductTotal,
+                ManualTotal: cartProductManualTotal
             });
         }
 
-        // Convert the cart details into a 2D array format (array of arrays)
-        const header = ['Thumbnail', 'Name', 'Category', 'Price', 'Quantity', 'Total', 'Manual Total'];
-        const excelData = [header];
-
-        // Add each product's details as a row
-        cartDetails.forEach(product => {
-            excelData.push([
-                product.thumbnail,
-                product.name,
-                product.category,
-                product.price,
-                product.quantity,
-                product.total,
-                product.manualTotal
-            ]);
-        });
-
-        // Define file path for saving the Excel file
-        const filePath = path.resolve(__dirname, '..', 'cartDetails.xlsx'); // Ensure it is in the project root
-
-        // Write the data to the Excel file
-        writeToExcel(excelData, filePath);
-        console.log('Cart details saved to Excel file at:', filePath);
+        // Call the utility function to save cart details into the Excel file
+        writeProductDataToExcel(cartDetails);
     }
+
+async proceedtoCheckout(){
+    await this.proceedtoCheckoutpage.click();
+}
+
 }
 
 module.exports = CartPage;

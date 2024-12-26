@@ -17,6 +17,11 @@ function getEnvironmentConfig() {
     baseUrl: config.baseUrl,
     username: config.username,
     password: config.password,
+    nameOnCard: config.nameOnCard,
+    cardNumber: config.cardNumber,
+    cvc: config.cvc,
+    expirationMM: config.expirationMM,
+    expirationYYYY: config.expirationYYYY,
   };
 }
 

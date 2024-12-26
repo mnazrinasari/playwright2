@@ -1,9 +1,9 @@
 // const { test, expect } = require('@playwright/test');
 // const { HomePage } = require('../pages/homePage');
-// const path = require('path');
-// const { readFromExcel } = require('../utils'); // Ensure the correct import
 // const CartPage = require('../pages/cartPage'); 
 // const environment = process.env.TEST_ENV || 'test';
+// const path = require('path');
+// const { readFromExcel } = require('../utils'); // Ensure the correct import
 // const filePath = './logintestdata.xlsx'; // Adjust path to your Excel file
 // const { baseUrl, username, password } = readLoginConfig(filePath, environment);
 
