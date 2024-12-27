@@ -74,7 +74,7 @@ class HomePage {
 
                     // Set the quantity and calculate total
                     const quantity = 1;
-                    const total = parseFloat(homeProductPrice) * quantity;
+                    const total = homeProductPrice * quantity;
                     const manualTotal = total; // Set Manual Total same as Total
 
                     // Prepare product data object
@@ -95,12 +95,12 @@ class HomePage {
                         const modal = this.continueModal;
                         await modal.waitFor({ state: 'visible' });
                         await modal.click();
-                        console.log("clicked");
+                        // console.log("clicked");
                     } else {
                         const modal = this.viewCartModal;
                         await modal.waitFor({ state: 'visible' });
                         await modal.click();
-                        console.log("last product clicked");
+                        // console.log("last product clicked");
                     }
                     break;
                 }

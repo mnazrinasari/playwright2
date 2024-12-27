@@ -7,23 +7,23 @@ class PaymentPage {
         this.cardNumber = page.locator('[data-qa="card-number"]');
         this.cvs = page.locator('[data-qa="cvc"]');
         this.expirationMM = page.locator('[data-qa="expiry-month"]');
-        this.expirationYYYY= page.locator('[data-qa="expiry-year"]');
-        this.payandConfirmOrder = page.locator('[data-qa="pay-button"]');
+        this.expirationYYYY = page.locator('[data-qa="expiry-year"]');
+        this.continuePay = page.locator("[data-qa='pay-button']");
 
     }
 
     // Get cart details and save them to an Excel file
     async enterPaymentDetils(name, number, cvs, monthexp, yearexp) {
-        await this.nameOnCard.fill(name);
-        await this.cardNumber.fill(String(number));
-        await this.cvs.fill(String(cvs));
-        await this.expirationMM.fill(String(monthexp));
-        await this.expirationYYYY.fill(String(yearexp));
+        await this.nameOnCard.pressSequentially(name);
+        await this.cardNumber.pressSequentially(String(number));
+        await this.cvs.pressSequentially(String(cvs));
+        await this.expirationMM.pressSequentially(String(monthexp));
+        await this.expirationYYYY.pressSequentially(String(yearexp));
       
     }
     
     async proceedtoOrder(){
-        await this.payandConfirmOrder.click();
+        await this.continuePay.click({ force: true });  // Try force-click if necessary
     }
 }
 
