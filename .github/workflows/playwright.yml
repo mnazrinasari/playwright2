@@ -44,14 +44,13 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    # Debugging secrets and environment variables
-    - name: Debug Secrets and Environment Variables
+    # Debugging: Check if secrets are correctly populated
+    - name: Debug GitHub Secrets Access
       run: |
-        echo "EMAIL_USER: ${EMAIL_USER}"
-        echo "EMAIL_PASSWORD: ${EMAIL_PASSWORD}"
-        echo "NOTIFY_EMAIL: ${NOTIFY_EMAIL}"
-        echo "HOME: $HOME"
-
+        echo "EMAIL_USER: ${{ secrets.EMAIL_USER }}"
+        echo "EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}"
+        echo "NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}"
+        
     # Send email notification
     - name: Send email notification
       if: ${{ always() }}  # This ensures the step is always run, whether the tests pass or fail
@@ -59,12 +58,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y msmtp  # Installing msmtp for sending email via SMTP
 
-        # Debugging: print the secrets before using them
-        echo "Using EMAIL_USER: ${EMAIL_USER}"
-        echo "Using EMAIL_PASSWORD: ${EMAIL_PASSWORD}"
-        echo "Using NOTIFY_EMAIL: ${NOTIFY_EMAIL}"
+        # Check and debug the resolved secrets before using them
+        echo "Resolved EMAIL_USER: ${{ secrets.EMAIL_USER }}"
+        echo "Resolved EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}"
+        echo "Resolved NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}"
 
-        # Write the .msmtprc file explicitly with correct format
+        # Write the .msmtprc file explicitly with the correct format
         echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
         echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
@@ -74,7 +73,7 @@ jobs:
         echo "tls=on" >> ~/.msmtprc
         echo "logfile=/tmp/msmtp.log" >> ~/.msmtprc
 
-        # Debugging: print the contents of the .msmtprc file to check the formatting
+        # Debug the contents of the .msmtprc file
         cat ~/.msmtprc
 
         # Send email on job completion (success or failure)
