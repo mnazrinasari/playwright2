@@ -11,6 +11,8 @@ const productFilePath = path.resolve(__dirname, './test-data/producttestdata.xls
 const productAddedFilePath = path.resolve(__dirname, './test-data/productdetails.xlsx');  // Path to the new file where added product data will be written
 const addressDetailsFilePath = path.resolve(__dirname, './test-data/addressdetails.xlsx'); // New path for storing address data
 
+
+
 // Function to read login config from Excel and include new fields
 function readLoginConfig(filePath, environment) {
   const workbook = xlsx.readFile(filePath);
@@ -222,6 +224,134 @@ async function clearAddressDetailsFile() {
 }
 
 
+// Path to your Excel file
+const filePath = path.resolve(__dirname, './test-data/productdetails.xlsx'); // Adjust path if necessary
+
+function readPageProductData() {
+  try {
+    // Read the Excel file
+    const workbook = xlsx.readFile(productAddedFilePath);
+    const sheetName = 'Products'; // Specify your sheet name if needed
+    const sheet = workbook.Sheets[sheetName];
+
+    // Convert the sheet to JSON format
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    // Log the data to verify it's being read correctly
+    // console.log('Data from Excel:', data);
+
+    return data;  // Return data as an array of objects
+  } catch (error) {
+    console.error('Error reading Excel file:', error);
+    return [];  // Return an empty array in case of failure
+  }
+}
+
+// Function to get the product data for a specific page (Homepage, Cart, Checkout, etc.)
+function getPageProductDataForAssertion(pageName) {
+  // Read data from the Excel file
+  const allData = readPageProductData();
+
+  // Log the data to verify the structure
+  // console.log('All data from Excel:', allData);
+
+  // Check if data is valid (i.e., an array)
+  if (!Array.isArray(allData) || allData.length === 0) {
+    console.error('No valid data found for the page:', pageName);
+    return [];
+  }
+
+  // Filter data for the specified page
+  const filteredData = allData.filter(item => {
+    // Check if item.Page is defined and is a string
+    if (item.Page && typeof item.Page === 'string') {
+      return item.Page.toLowerCase() === pageName.toLowerCase();
+    }
+    // If item.Page is not valid, return false to exclude it
+    console.warn('Skipping item due to missing or invalid "Page" field:', item);
+    return false;
+  });
+
+  // Structure the filtered data so it's easier to access for assertions
+  let pageData = [];
+
+  // If there is data for the specified page, format it accordingly
+  if (filteredData.length > 0) {
+    pageData = filteredData.map(item => ({
+      thumbnail: item.Thumbnail,
+      name: item.Name,
+      category: item.Category,
+      price: item.Price,        // Convert price to number
+      quantity: Number(item.Quantity),  // Coßnvert quantity to number
+      total: Number(item.Total),        // Convert total to number
+      manualTotal: Number(item.ManualTotal)  // Convert manualTotal to number
+    }));
+  
+  } else {
+    console.warn(`No products found for page: ${pageName}`);
+  }
+
+  return pageData;
+}
+
+
+// Function to get the address data for a specific type (e.g., 'billing' or 'delivery')
+function getAddressDataByType(addressType) {
+  const addressData = readAddressData();
+
+  // Filter the data by address type (e.g., 'billing' or 'delivery')
+  const filteredData = addressData.filter(item => item.addressType && item.addressType.toLowerCase() === addressType.toLowerCase());
+
+  if (filteredData.length === 0) {
+    console.error(`No address data found for type: ${addressType}`);
+    return null;
+  }
+
+  return filteredData[0]; // Return the first match for the given address type
+}
+
+
+function readAddressData() {
+  try {
+    // Read the Excel file
+    const workbook = xlsx.readFile(addressDetailsFilePath);
+    const sheetName = 'Addresses'; // Assuming the sheet name is 'Addresses'
+    const sheet = workbook.Sheets[sheetName];
+
+    // Convert the sheet to JSON (array of objects)
+    const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });  // Read the sheet as an array of arrays (rows)
+
+    // Log the raw data to verify it's being read correctly
+    // console.log('Raw Address Data:', data);
+
+    // Map the data (skip the first row which contains headers)
+    const addressData = data.slice(1); // Data starts from the second row (excluding the headers)
+
+    // Hardcoded mapping to specific fields like 'name', 'address1', 'address2', etc.
+    const mappedData = addressData.map(row => {
+      return {
+        addressType: row[0],               // Address Type (delivery, billing)
+        name: row[1],                       // Name
+        address1: row[2],                   // Address Line 1
+        address2: row[3],                   // Address Line 2
+        address3: row[4],                   // Address Line 3
+        address4: row[5],                   // Trim and normalize Address Line 4
+        country: row[6],                    // Country
+        phoneNumber: row[7]                 // Phone Number
+      };
+    });
+
+    // Return the mapped address data
+    return mappedData;
+  } catch (error) {
+    console.error('Error reading address data from Excel:', error);
+    return [];  // Return an empty array in case of failure
+  }
+}
+
+
+
+
 
 // Export the functions
 module.exports = { 
@@ -232,5 +362,7 @@ module.exports = {
   clearProductDetailsFile,
   clearAddressDetailsFile,  // Export the function to clear product details file
   createAddressBackup,   // Export the function to create address backup
-  clearAddressDetailsFile  // Export the function to clear address details file
+  clearAddressDetailsFile,  // Export the function to clear address details file
+  getPageProductDataForAssertion,
+  getAddressDataByType
 };

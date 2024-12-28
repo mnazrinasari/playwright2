@@ -55,63 +55,67 @@ class CheckoutPage {
     }
 
     cleanAddressEntry(entry, unwantedPrefix) {
-        // Only remove unwanted prefix like "Mr." or "Ms." from the entry, but keep the name
-        if (entry.startsWith(unwantedPrefix)) {
-          return entry.slice(unwantedPrefix.length).trim();  // Remove the unwanted prefix but keep the name
-        }
-        return entry;  // Return the entry as-is if it doesn't start with the unwanted prefix
+      // Remove unwanted prefix like "Mr." or "Ms." from the entry, but keep the name
+      if (entry.startsWith(unwantedPrefix)) {
+        return entry.slice(unwantedPrefix.length).trim();  // Remove the unwanted prefix but keep the name
       }
-      
-      cleanAddressData(addressArray, unwantedEntry, unwantedPrefix) {
-        // Modify the entries in the array without filtering out any ones
-        return addressArray.map(entry => {
-          // If the entry matches unwantedEntry (like "Your delivery address"), we just leave it out
-          if (entry === unwantedEntry) {
-            return null;  // Return null or undefined to remove it from the final result
-          }
-      
-          // Remove the prefix (e.g., "Mr.") from the name field (index 1)
-          return this.cleanAddressEntry(entry, unwantedPrefix);
-        }).filter(entry => entry !== null && entry !== undefined); // Remove null/undefined values from the final result
-      }
-      
-      async getAddressDetails(type) {
-        let addressType;
-        let addressLabel;
-        let genderPrefix;
-      
-        // Determine which address to use based on the 'type' argument
-        switch (type) {
-          case 'delivery':
-            addressType = this.deliveryAddress;
-            addressLabel = 'Your delivery address';
-            genderPrefix = 'Mr.';  // For delivery address, use "Mr."
-            break;
-          case 'billing':
-            addressType = this.billingAddress;
-            addressLabel = 'Your billing address';
-            genderPrefix = 'Mr.';  // For billing address, use "Mr."
-            break;
-          default:
-            throw new Error('Invalid address type');
+    
+      // Remove unwanted newline, tab characters, and other whitespace issues
+      return entry.replace(/[\n\t\r]+/g, ' ').trim();  // Replace newlines/tabs with a single space and trim
+    }
+    
+    cleanAddressData(addressArray, unwantedEntry, unwantedPrefix) {
+      // Modify the entries in the array without filtering out any ones
+      return addressArray.map(entry => {
+        // If the entry matches unwantedEntry (like "Your delivery address"), we just leave it out
+        if (entry === unwantedEntry) {
+          return null;  // Return null or undefined to remove it from the final result
         }
-      
-        // Retrieve the address details (assuming 8 address fields)
-        const addressElements = addressType.locator("li");
-        const count = 8; // Adjust if the number of address fields changes
-        let retrievedAddress = [];
-      
-        for (let i = 0; i < count; i++) {
-          const addressDetail = await addressElements.nth(i).textContent();
-          retrievedAddress.push(addressDetail.trim());
-        }
-      
-        // Clean the address data: Remove unwanted labels (addressLabel) and gender prefix (e.g., "Mr.")
-        retrievedAddress = this.cleanAddressData(retrievedAddress, addressLabel, genderPrefix);
-      
-        // Call the Excel writing function
-        await writeAddressDataToExcel(type, retrievedAddress);
+    
+        // Remove the prefix (e.g., "Mr.") from the name field (index 1)
+        return this.cleanAddressEntry(entry, unwantedPrefix);
+      }).filter(entry => entry !== null && entry !== undefined); // Remove null/undefined values from the final result
+    }
+    
+    async getAddressDetails(type) {
+      let addressType;
+      let addressLabel;
+      let genderPrefix;
+    
+      // Determine which address to use based on the 'type' argument
+      switch (type) {
+        case 'delivery':
+          addressType = this.deliveryAddress;
+          addressLabel = 'Your delivery address';
+          genderPrefix = 'Mr.';  // For delivery address, use "Mr."
+          break;
+        case 'billing':
+          addressType = this.billingAddress;
+          addressLabel = 'Your billing address';
+          genderPrefix = 'Mr.';  // For billing address, use "Mr."
+          break;
+        default:
+          throw new Error('Invalid address type');
       }
+    
+      // Retrieve the address details (assuming 8 address fields)
+      const addressElements = addressType.locator("li");
+      const count = 8; // Adjust if the number of address fields changes
+      let retrievedAddress = [];
+    
+      for (let i = 0; i < count; i++) {
+        const addressDetail = await addressElements.nth(i).textContent();
+        retrievedAddress.push(addressDetail.trim());
+      }
+    
+      // Clean the address data: Remove unwanted labels (addressLabel) and gender prefix (e.g., "Mr.")
+      retrievedAddress = this.cleanAddressData(retrievedAddress, addressLabel, genderPrefix);
+    
+      // Call the Excel writing function
+      await writeAddressDataToExcel(type, retrievedAddress);
+      return retrievedAddress;
+    }
+    
       
     
       
