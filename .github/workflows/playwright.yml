@@ -2,10 +2,10 @@ name: Playwright Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
+    branches: [main, master]
+  workflow_dispatch:  # This allows manual trigger of the workflow
 
 jobs:
   test:
@@ -13,50 +13,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository code
     - uses: actions/checkout@v4
-
-    # Set up Node.js environment
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
 
-    # Install dependencies using npm
     - name: Install dependencies
       run: npm ci
 
-    # Install Playwright Browsers
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    # Run Playwright tests with Allure reporter
     - name: Run Playwright tests
-      run: npx playwright test --reporter=allure-playwright
+      run: npx playwright test
 
-    # Generate Allure report
-    - name: Generate Allure report
+    - name: Install Allure Commandline
       run: |
-        allure generate allure-results --clean -o allure-report
+        sudo apt-get update
+        sudo apt-get install -y openjdk-11-jdk  # Install Java (Allure requires Java)
+        curl -o allure-commandline.zip -L "https://github.com/allure-framework/allure2/releases/download/2.19.0/allure-2.19.0.zip"  # Download Allure CLI
+        unzip allure-commandline.zip -d allure  # Unzip Allure
+        sudo ln -s $PWD/allure/bin/allure /usr/local/bin/allure  # Create symbolic link to the allure command
 
-    # Upload Allure report as artifact
+    - name: Generate Allure report
+      run: allure generate allure-results --clean -o allure-report
+
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
-        name: allure-report
+        name: playwright-report
         path: allure-report/
         retention-days: 30
 
-    # Optionally send email notifications (requires configuration)
-    - name: Send Email Notification with Report Link
-      uses: dawidd6/action-send-mail@v3
-      with:
-        smtp-server: smtp.gmail.com
-        smtp-port: 587
-        smtp-user: ${{ secrets.EMAIL_USER }}
-        smtp-password: ${{ secrets.EMAIL_PASSWORD }}
-        from: ${{ secrets.EMAIL_USER }}
-        to: queckey@gmail.com
-        subject: "Playwright Test Run Complete"
-        body: |
-          Playwright test run has completed. Please find the Allure report at the following link:
-          https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts
+    - name: Send email notification
+      if: ${{ always() }}  # This ensures the step is always run, whether the tests pass or fail
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y msmtp  # Installing msmtp for sending email via SMTP
+
+        echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
+        echo "auth=login" >> ~/.msmtprc
+        echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
+        echo "password=${{ secrets.EMAIL_PASSWORD }}" >> ~/.msmtprc
+        echo "host=smtp.gmail.com" >> ~/.msmtprc
+        echo "port=587" >> ~/.msmtprc
+        echo "tls=on" >> ~/.msmtprc
+        echo "logfile=/tmp/msmtp.log" >> ~/.msmtprc
+
+        # Send email on job completion (success or failure)
+        echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp ${{ secrets.NOTIFY_EMAIL }}
