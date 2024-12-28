@@ -5,7 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  workflow_dispatch:  # This allows manual trigger of the workflow
+  workflow_dispatch:
 
 jobs:
   test:
@@ -42,28 +42,26 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    - name: Install sendmail and send email with Allure report attachment
+    - name: Send email with Allure report attachment using Mailgun API
       if: ${{ always() }}
       run: |
-        # Install sendmail
+        # Install curl for API request
         sudo apt-get update
-        sudo apt-get install -y sendmail
+        sudo apt-get install -y curl
 
-        # Prepare the email content
-        email_subject="GitHub Actions Test Completion Report"
-        email_body="Your Playwright tests have completed successfully.\n\nCheck the report in the attachment."
+        # Prepare email with Mailgun API
+        MAILGUN_API_KEY="${{ secrets.MAILGUN_API_KEY }}"
+        MAILGUN_DOMAIN="${{ secrets.MAILGUN_DOMAIN }}"
+        EMAIL_SUBJECT="GitHub Actions Test Completion Report"
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the attachment."
+        EMAIL_TO="${{ secrets.NOTIFY_EMAIL }}"
+        EMAIL_FROM="postmaster@${MAILGUN_DOMAIN}"
 
-        # Prepare the email header
-        email_header="Subject: ${email_subject}\nTo: ${{ secrets.NOTIFY_EMAIL }}\nContent-Type: multipart/mixed; boundary=\"boundary\"\n"
-
-        # Prepare the email body and attachment
-        boundary="boundary"
-        report_file="allure-report/index.html"
-        
-        # Create the email content with base64 encoding for the attachment
-        attachment=$(base64 < "${report_file}")
-        email_content="--$boundary\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\n$email_body\n\n--$boundary\nContent-Type: text/html; name=\"$(basename $report_file)\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"$(basename $report_file)\"\n\n$attachment\n--$boundary--"
-
-        # Send the email with the attached Allure report
-        echo -e "$email_header$email_content" | sendmail -t
-
+        # Create the email payload
+        curl -X POST "https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages" \
+          -u "api:$MAILGUN_API_KEY" \
+          -F from="$EMAIL_FROM" \
+          -F to="$EMAIL_TO" \
+          -F subject="$EMAIL_SUBJECT" \
+          -F text="$EMAIL_BODY" \
+          -F attachment=@allure-report/index.html
