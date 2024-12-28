@@ -13,7 +13,7 @@ class PaymentPage {
     }
 
     // Get cart details and save them to an Excel file
-    async enterPaymentDetils(name, number, cvs, monthexp, yearexp) {
+    async enterPaymentDetails(name, number, cvs, monthexp, yearexp) {
         await this.nameOnCard.pressSequentially(name);
         await this.cardNumber.pressSequentially(String(number));
         await this.cvs.pressSequentially(String(cvs));

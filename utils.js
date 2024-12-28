@@ -6,7 +6,7 @@ const copyFile = promisify(fs.copyFile);
 const moment = require('moment');  // We'll use moment.js to generate a timestamp for filenames
 
 // Centralize the paths for both the login and product Excel files
-const configFilePath = path.resolve(__dirname, './test-data/logintestdata.xlsx'); // Path to the login Excel file
+const configFilePath = path.resolve(__dirname, './test-data/accounttestdata.xlsx'); // Path to the login Excel file
 const productFilePath = path.resolve(__dirname, './test-data/producttestdata.xlsx'); // Path to the product Excel file
 const productAddedFilePath = path.resolve(__dirname, './test-data/productdetails.xlsx');  // Path to the new file where added product data will be written
 const addressDetailsFilePath = path.resolve(__dirname, './test-data/addressdetails.xlsx'); // New path for storing address data
@@ -38,21 +38,32 @@ function readLoginConfig(filePath, environment) {
   };
 }
 
-// Function to read product data from Excel based on the environment
-function readProductData(filePath, environment) {
-  const workbook = xlsx.readFile(filePath);
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+// utils.js
+// Define the path to the Excel file (adjust the path as needed)
+
+function readProductData(environment) {
+  // console.log('Reading product data for environment:', environment);  // Debug log
+
+  // Read the Excel file
+  const workbook = xlsx.readFile(productFilePath);
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  // Convert Excel sheet to JSON data
   const data = xlsx.utils.sheet_to_json(sheet);
 
-  // Filter products based on environment
-  const filteredProducts = data.filter(row => row.Environment && row.Environment.trim().toLowerCase() === environment.trim().toLowerCase());
+  // Filter data by the environment
+  const filteredData = data.filter(item => item.Environment.toLowerCase() === environment.toLowerCase());
 
-  if (filteredProducts.length === 0) {
-    throw new Error(`No product data found for environment: ${environment}`);
-  }
+  // console.log('Filtered Product Data for environment:', environment, filteredData);  // Debug log
 
-  return filteredProducts;  // Returning the array of products
+  return filteredData;  // Return all product data for the selected environment
 }
+
+
+
+
 
 // Function to write product data to Excel
 function writeProductDataToExcel(productData) {
@@ -215,7 +226,7 @@ async function clearAddressDetailsFile() {
 // Export the functions
 module.exports = { 
   readLoginConfig: (environment) => readLoginConfig(configFilePath, environment), 
-  readProductData: (environment) => readProductData(productFilePath, environment),
+  readProductData,
   writeProductDataToExcel,  // Export the function to write product data
   writeAddressDataToExcel,  // Export the function to write address data
   clearProductDetailsFile,
