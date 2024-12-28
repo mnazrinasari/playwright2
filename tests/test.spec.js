@@ -76,7 +76,7 @@ test.describe('Login Tests', () => {
   });
 
   test('Validate product data on Cart', async () => {
-    const homepageData = await getPageProductDataForAssertion('Cart');
+    const homepageData = await getPageProductDataForAssertion('Shopping Cart');
     expect(homepageData).toBeDefined();
     expect(Array.isArray(homepageData)).toBe(true);
 

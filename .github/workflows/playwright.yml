@@ -59,7 +59,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y msmtp  # Installing msmtp for sending email via SMTP
 
-        # Ensure proper secrets are used
+        # Debugging: print the secrets before using them
+        echo "Using EMAIL_USER: ${EMAIL_USER}"
+        echo "Using EMAIL_PASSWORD: ${EMAIL_PASSWORD}"
+        echo "Using NOTIFY_EMAIL: ${NOTIFY_EMAIL}"
+
+        # Write the .msmtprc file explicitly with correct format
         echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
         echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
@@ -69,7 +74,7 @@ jobs:
         echo "tls=on" >> ~/.msmtprc
         echo "logfile=/tmp/msmtp.log" >> ~/.msmtprc
 
-        # Debugging the content of the .msmtprc file
+        # Debugging: print the contents of the .msmtprc file to check the formatting
         cat ~/.msmtprc
 
         # Send email on job completion (success or failure)
