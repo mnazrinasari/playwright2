@@ -42,33 +42,16 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    - name: Install msmtp and send email notification
+    - name: Install mutt and send email with Allure report attachment
       if: ${{ always() }}
       run: |
-        # Install msmtp
+        # Install mutt for sending email with attachments
         sudo apt-get update
-        sudo apt-get install -y msmtp
+        sudo apt-get install -y mutt
 
-        # Create or overwrite .msmtprc with correct syntax
-        echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
-        echo "auth=login" >> ~/.msmtprc
-        echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
-        echo "password=${{ secrets.EMAIL_PASSWORD }}" >> ~/.msmtprc
-        echo "host=smtp.gmail.com" >> ~/.msmtprc
-        echo "port=587" >> ~/.msmtprc
-        echo "tls=on" >> ~/.msmtprc
-        echo "logfile=/tmp/msmtp.log" >> ~/.msmtprc
+        # Prepare the email content
+        email_subject="GitHub Actions Test Completion Report"
+        email_body="Your Playwright tests have completed successfully.\n\nCheck the report in the attachment."
 
-        # Debug: Output the contents of .msmtprc to check formatting
-        echo "Checking contents of .msmtprc:"
-        cat ~/.msmtprc
-
-        # Check for hidden characters or formatting issues
-        echo "Checking for hidden characters in .msmtprc:"
-        cat -v ~/.msmtprc
-
-        # Verify file permissions for .msmtprc (to ensure msmtp can access it)
-        ls -l ~/.msmtprc
-
-        # Send email notification (single email address for now)
-        echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp "${{ secrets.NOTIFY_EMAIL }}"
+        # Attach the Allure report directory (zipped) and send the email using mutt
+        echo -e "Subject:${email_subject}\nTo:${{ secrets.NOTIFY_EMAIL }}\n\n${email_body}" | mutt -a allure-report/*.html -s "${email_subject}" -- "${{ secrets.NOTIFY_EMAIL }}"
