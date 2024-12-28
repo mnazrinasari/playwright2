@@ -42,16 +42,28 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    - name: Install mutt and send email with Allure report attachment
+    - name: Install sendmail and send email with Allure report attachment
       if: ${{ always() }}
       run: |
-        # Install mutt for sending email with attachments
+        # Install sendmail
         sudo apt-get update
-        sudo apt-get install -y mutt
+        sudo apt-get install -y sendmail
 
         # Prepare the email content
         email_subject="GitHub Actions Test Completion Report"
         email_body="Your Playwright tests have completed successfully.\n\nCheck the report in the attachment."
 
-        # Attach the Allure report directory (zipped) and send the email using mutt
-        echo -e "Subject:${email_subject}\nTo:${{ secrets.NOTIFY_EMAIL }}\n\n${email_body}" | mutt -a allure-report/*.html -s "${email_subject}" -- "${{ secrets.NOTIFY_EMAIL }}"
+        # Prepare the email header
+        email_header="Subject: ${email_subject}\nTo: ${{ secrets.NOTIFY_EMAIL }}\nContent-Type: multipart/mixed; boundary=\"boundary\"\n"
+
+        # Prepare the email body and attachment
+        boundary="boundary"
+        report_file="allure-report/index.html"
+        
+        # Create the email content with base64 encoding for the attachment
+        attachment=$(base64 < "${report_file}")
+        email_content="--$boundary\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\n$email_body\n\n--$boundary\nContent-Type: text/html; name=\"$(basename $report_file)\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"$(basename $report_file)\"\n\n$attachment\n--$boundary--"
+
+        # Send the email with the attached Allure report
+        echo -e "$email_header$email_content" | sendmail -t
+
