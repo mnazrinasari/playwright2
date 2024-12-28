@@ -30,10 +30,11 @@ jobs:
     - name: Install msmtp and send email notification
       if: ${{ always() }}
       run: |
+        # Update package lists and install msmtp
         sudo apt-get update
         sudo apt-get install -y msmtp
 
-        # Create .msmtprc file
+        # Create .msmtprc with the correct format
         echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
         echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
@@ -43,8 +44,13 @@ jobs:
         echo "tls=on" >> ~/.msmtprc
         echo "logfile=/tmp/msmtp.log" >> ~/.msmtprc
 
-        # Debug: Output the contents of .msmtprc
+        # Debug: Output the contents of .msmtprc to check formatting
         cat ~/.msmtprc
+
+        # Check for hidden characters or formatting issues
+        echo "Checking for hidden characters in .msmtprc:"
+        cat -v ~/.msmtprc
 
         # Send email notification
         echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp ${{ secrets.NOTIFY_EMAIL }}
+    
