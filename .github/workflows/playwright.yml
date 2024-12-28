@@ -28,36 +28,12 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
-    - name: Install Allure Commandline
+    - name: Install Allure Commandline (via npm)
       run: |
-        # Update and install dependencies
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk unzip curl  # Java for Allure and unzip to extract Allure
-
-        # Download and unzip Allure CLI
-        curl -o allure-commandline.zip -L "https://github.com/allure-framework/allure2/releases/download/2.19.0/allure-2.19.0.zip"
-        unzip allure-commandline.zip -d allure
-        
-        # List the contents of the unzipped Allure directory to confirm it's there
-        ls -l allure/bin
-
-        # Create symbolic link to allure binary in the system PATH
-        sudo ln -sf $PWD/allure/bin/allure /usr/local/bin/allure
-        
-        # Verify allure installation and path
-        allure --version  # This should output the Allure version to confirm correct installation
-        which allure  # Check if allure is available in PATH
+        npm install -g allure-commandline --save-dev
 
     - name: Generate Allure report
-      run: |
-        # Check if allure is accessible in the PATH
-        which allure  # Ensure it's found in the PATH
-        
-        # Verify allure version
-        allure --version  # Print Allure version for debugging
-        
-        # Generate the Allure report
-        allure generate allure-results --clean -o allure-report
+      run: allure generate allure-results --clean -o allure-report
 
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
@@ -95,4 +71,4 @@ jobs:
         ls -l ~/.msmtprc
 
         # Send email notification (single email address for now)
-        echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp "${{ secrets.NOTIFY_EMAIL }}"
+        echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the rep
