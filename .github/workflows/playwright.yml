@@ -34,6 +34,7 @@ jobs:
         curl -o allure-commandline.zip -L "https://github.com/allure-framework/allure2/releases/download/2.19.0/allure-2.19.0.zip"  # Download Allure CLI
         unzip allure-commandline.zip -d allure  # Unzip Allure
         sudo ln -s $PWD/allure/bin/allure /usr/local/bin/allure  # Create symbolic link to the allure command
+        allure --version  # Ensure allure is available in the system PATH
 
     - name: Generate Allure report
       run: allure generate allure-results --clean -o allure-report

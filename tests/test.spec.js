@@ -98,8 +98,7 @@ test.describe('Login Tests', () => {
 
     await cartpage.proceedtoCheckout();
     await checkoutpage.getCheckoutDetails();
-    const delivery = await checkoutpage.getAddressDetails('delivery');
-    console.log(delivery);
+    await checkoutpage.getAddressDetails('delivery');
     await checkoutpage.getAddressDetails('billing');
   });
 
