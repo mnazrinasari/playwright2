@@ -44,12 +44,19 @@ jobs:
         path: allure-report/
         retention-days: 30
 
+    - name: Debug Secrets and Environment Variables
+      run: |
+        echo "EMAIL_USER=${{ secrets.EMAIL_USER }}"
+        echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}"
+        echo $HOME
+
     - name: Send email notification
       if: ${{ always() }}  # This ensures the step is always run, whether the tests pass or fail
       run: |
         sudo apt-get update
         sudo apt-get install -y msmtp  # Installing msmtp for sending email via SMTP
 
+        # Configure msmtp with the proper secrets and settings
         echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
         echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
