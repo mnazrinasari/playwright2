@@ -1,0 +1,9 @@
+[
+  'Auto Assess',
+  'POSable',
+  'This is a fun address',
+  'Not for fun address',
+  'Yishun Singapore 20241212',
+  'Singapore',
+  '124309876'
+]
