@@ -49,11 +49,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y msmtp
 
-        # Create or overwrite .msmtprc with the correct syntax
-        echo "from=\"${{ secrets.EMAIL_USER }}\"" > ~/.msmtprc
+        # Create or overwrite .msmtprc with correct syntax
+        echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
-        echo "user=\"${{ secrets.EMAIL_USER }}\"" >> ~/.msmtprc
-        echo "password=\"${{ secrets.EMAIL_PASSWORD }}\"" >> ~/.msmtprc
+        echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
+        echo "password=${{ secrets.EMAIL_PASSWORD }}" >> ~/.msmtprc
         echo "host=smtp.gmail.com" >> ~/.msmtprc
         echo "port=587" >> ~/.msmtprc
         echo "tls=on" >> ~/.msmtprc
