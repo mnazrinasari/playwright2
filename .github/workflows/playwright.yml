@@ -44,19 +44,22 @@ jobs:
         path: allure-report/
         retention-days: 30
 
+    # Debugging secrets and environment variables
     - name: Debug Secrets and Environment Variables
       run: |
-        echo "EMAIL_USER=${{ secrets.EMAIL_USER }}"
-        echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}"
-        echo $HOME
+        echo "EMAIL_USER: ${EMAIL_USER}"
+        echo "EMAIL_PASSWORD: ${EMAIL_PASSWORD}"
+        echo "NOTIFY_EMAIL: ${NOTIFY_EMAIL}"
+        echo "HOME: $HOME"
 
+    # Send email notification
     - name: Send email notification
       if: ${{ always() }}  # This ensures the step is always run, whether the tests pass or fail
       run: |
         sudo apt-get update
         sudo apt-get install -y msmtp  # Installing msmtp for sending email via SMTP
 
-        # Configure msmtp with the proper secrets and settings
+        # Ensure proper secrets are used
         echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
         echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
@@ -65,6 +68,9 @@ jobs:
         echo "port=587" >> ~/.msmtprc
         echo "tls=on" >> ~/.msmtprc
         echo "logfile=/tmp/msmtp.log" >> ~/.msmtprc
+
+        # Debugging the content of the .msmtprc file
+        cat ~/.msmtprc
 
         # Send email on job completion (success or failure)
         echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp ${{ secrets.NOTIFY_EMAIL }}
