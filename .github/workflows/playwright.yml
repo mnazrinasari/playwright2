@@ -1,12 +1,3 @@
-name: Playwright Tests
-
-on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
-  workflow_dispatch:
-
 jobs:
   test:
     timeout-minutes: 60
@@ -27,36 +18,13 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
-    - name: Install Allure Commandline
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk
-        npm install -g allure-commandline
-        allure --version
-
-    - name: Generate Allure report
-      run: allure generate allure-results --clean -o allure-report
-
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: allure-report/
-        retention-days: 30
-
-    - name: Debug GitHub Secrets Access
-      run: |
-        echo "Resolved EMAIL_USER: '${{ secrets.EMAIL_USER }}'"
-        echo "Resolved EMAIL_PASSWORD: '${{ secrets.EMAIL_PASSWORD }}'"
-        echo "Resolved NOTIFY_EMAIL: '${{ secrets.NOTIFY_EMAIL }}'"
-
-    - name: Send email notification
+    - name: Install msmtp and send email notification
       if: ${{ always() }}
       run: |
         sudo apt-get update
         sudo apt-get install -y msmtp
 
-        # Write the .msmtprc file
+        # Create .msmtprc file
         echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
         echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
@@ -66,8 +34,8 @@ jobs:
         echo "tls=on" >> ~/.msmtprc
         echo "logfile=/tmp/msmtp.log" >> ~/.msmtprc
 
-        # Debug the contents of the .msmtprc file
+        # Debug: Output the contents of .msmtprc
         cat ~/.msmtprc
 
-        # Send the email
+        # Send email notification
         echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp ${{ secrets.NOTIFY_EMAIL }}
