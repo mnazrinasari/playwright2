@@ -5,7 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  workflow_dispatch:  # This allows manual trigger of the workflow
+  workflow_dispatch:
 
 jobs:
   test:
@@ -30,9 +30,9 @@ jobs:
     - name: Install Allure Commandline
       run: |
         sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk  # Install Java (Allure requires Java)
-        npm install -g allure-commandline  # Install Allure CLI globally via npm
-        allure --version  # Ensure allure is available
+        sudo apt-get install -y openjdk-11-jdk
+        npm install -g allure-commandline
+        allure --version
 
     - name: Generate Allure report
       run: allure generate allure-results --clean -o allure-report
@@ -44,26 +44,19 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    # Debugging: Check if secrets are correctly populated
     - name: Debug GitHub Secrets Access
       run: |
-        echo "EMAIL_USER: ${{ secrets.EMAIL_USER }}"
-        echo "EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}"
-        echo "NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}"
-        
-    # Send email notification
+        echo "Resolved EMAIL_USER: '${{ secrets.EMAIL_USER }}'"
+        echo "Resolved EMAIL_PASSWORD: '${{ secrets.EMAIL_PASSWORD }}'"
+        echo "Resolved NOTIFY_EMAIL: '${{ secrets.NOTIFY_EMAIL }}'"
+
     - name: Send email notification
-      if: ${{ always() }}  # This ensures the step is always run, whether the tests pass or fail
+      if: ${{ always() }}
       run: |
         sudo apt-get update
-        sudo apt-get install -y msmtp  # Installing msmtp for sending email via SMTP
+        sudo apt-get install -y msmtp
 
-        # Check and debug the resolved secrets before using them
-        echo "Resolved EMAIL_USER: ${{ secrets.EMAIL_USER }}"
-        echo "Resolved EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}"
-        echo "Resolved NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}"
-
-        # Write the .msmtprc file explicitly with the correct format
+        # Write the .msmtprc file
         echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
         echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
@@ -76,5 +69,5 @@ jobs:
         # Debug the contents of the .msmtprc file
         cat ~/.msmtprc
 
-        # Send email on job completion (success or failure)
+        # Send the email
         echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp ${{ secrets.NOTIFY_EMAIL }}
