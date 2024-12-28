@@ -49,11 +49,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y msmtp
 
-        # Clear previous .msmtprc and create new .msmtprc with the correct syntax
-        echo "from=${{ secrets.EMAIL_USER }}" > ~/.msmtprc
+        # Create or overwrite .msmtprc with the correct syntax
+        echo "from=\"${{ secrets.EMAIL_USER }}\"" > ~/.msmtprc
         echo "auth=login" >> ~/.msmtprc
-        echo "user=${{ secrets.EMAIL_USER }}" >> ~/.msmtprc
-        echo "password=${{ secrets.EMAIL_PASSWORD }}" >> ~/.msmtprc
+        echo "user=\"${{ secrets.EMAIL_USER }}\"" >> ~/.msmtprc
+        echo "password=\"${{ secrets.EMAIL_PASSWORD }}\"" >> ~/.msmtprc
         echo "host=smtp.gmail.com" >> ~/.msmtprc
         echo "port=587" >> ~/.msmtprc
         echo "tls=on" >> ~/.msmtprc
@@ -71,4 +71,4 @@ jobs:
         ls -l ~/.msmtprc
 
         # Send email notification (single email address for now)
-        echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the rep
+        echo -e "Subject: GitHub Actions Test Completion Report\n\nYour Playwright tests have completed successfully.\n\nVisit the report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" | msmtp "${{ secrets.NOTIFY_EMAIL }}"
