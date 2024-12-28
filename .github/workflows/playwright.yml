@@ -57,31 +57,11 @@ jobs:
         EMAIL_TO="${{ secrets.NOTIFY_EMAIL }}"
         EMAIL_FROM="postmaster@${MAILGUN_DOMAIN}"
 
-        # Log environment variables (sensitive data will be hidden automatically)
-        echo "MAILGUN_API_KEY: $MAILGUN_API_KEY"
-        echo "MAILGUN_DOMAIN: $MAILGUN_DOMAIN"
-        echo "EMAIL_SUBJECT: $EMAIL_SUBJECT"
-        echo "EMAIL_BODY: $EMAIL_BODY"
-        echo "EMAIL_TO: $EMAIL_TO"
-        echo "EMAIL_FROM: $EMAIL_FROM"
-
-        # Debug: Check if the Allure report exists and log file details
-        echo "Checking if Allure report directory exists..."
-        ls -l allure-report/
-        echo "Checking size of index.html file..."
-        if [ -f allure-report/index.html ]; then
-          echo "index.html exists, file size: $(stat -c %s allure-report/index.html) bytes"
-        else
-          echo "index.html not found, please check Allure report generation."
-          exit 1
-        fi
-
-        # Debug: Show the curl command and send request
-        echo "Sending email via Mailgun API..."
-        curl -v -X POST "https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages" \
+        # Create the email payload
+        curl -X POST "https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages" \
           -u "api:$MAILGUN_API_KEY" \
           -F from="$EMAIL_FROM" \
           -F to="$EMAIL_TO" \
           -F subject="$EMAIL_SUBJECT" \
           -F text="$EMAIL_BODY" \
-          -F attachment=@allure-report/index.html || echo "Failed to send email"
+          -F attachment=@allure-report/index.html
