@@ -47,12 +47,21 @@ jobs:
         # Deploy Allure report to GitHub Pages
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        git clone --branch gh-pages https://github.com/${{ github.repository }}.git github-pages
-        cp -r allure-report/* github-pages/
+        
+        # Clone the repository
+        git clone https://github.com/${{ github.repository }}.git github-pages
         cd github-pages
+
+        # Create gh-pages branch if it doesn't exist
+        git checkout -b gh-pages || git checkout gh-pages
+
+        # Copy the Allure report into the 'github-pages' directory
+        cp -r ../allure-report/* .
+
+        # Add, commit, and push the changes to the gh-pages branch
         git add .
         git commit -m "Deploy Allure report"
-        git push
+        git push origin gh-pages
 
     - name: Send email with Allure report link using Sendinblue API
       if: ${{ always() }}
