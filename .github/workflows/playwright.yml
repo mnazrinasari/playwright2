@@ -60,8 +60,10 @@ jobs:
         # Pull the latest changes from the remote gh-pages branch with rebase
         git pull --rebase origin gh-pages
 
-        # Copy the Allure report into the 'github-pages' directory
-        cp -r ../allure-report/* .
+        # Copy the Allure report into the 'gh-pages' directory
+        # Ensure that we copy the files into a folder named 'allure-report'
+        mkdir -p allure-report
+        cp -r ../allure-report/* allure-report/
 
         # Add, commit, and push the changes to the gh-pages branch
         git add .
