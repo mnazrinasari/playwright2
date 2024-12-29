@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Playwright Tests with Allure Report and Sendinblue Email
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
@@ -42,26 +42,28 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    - name: Send email with Allure report attachment using Mailgun API
+    - name: Send email with Allure report attachment using Sendinblue API
       if: ${{ always() }}
       run: |
         # Install curl for API request
         sudo apt-get update
         sudo apt-get install -y curl
 
-        # Prepare email with Mailgun API
-        MAILGUN_API_KEY="${{ secrets.MAILGUN_API_KEY }}"
-        MAILGUN_DOMAIN="${{ secrets.MAILGUN_DOMAIN }}"
-        EMAIL_SUBJECT="GitHub Actions Test Completion Report"
+        # Set environment variables from GitHub secrets
+        SENDINBLUE_API_KEY="${{ secrets.SENDINBLUE_API_KEY }}"
+        SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
+        SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
+        EMAIL_SUBJECT="Playwright Tests Completed - Allure Report"
         EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the attachment."
-        EMAIL_TO="${{ secrets.NOTIFY_EMAIL }}"
-        EMAIL_FROM="postmaster@${MAILGUN_DOMAIN}"
-
-        # Create the email payload
-        curl -X POST "https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages" \
-          -u "api:$MAILGUN_API_KEY" \
-          -F from="$EMAIL_FROM" \
-          -F to="$EMAIL_TO" \
-          -F subject="$EMAIL_SUBJECT" \
-          -F text="$EMAIL_BODY" \
-          -F attachment=@allure-report/index.html
+        
+        # Prepare the email payload and send using Sendinblue API
+        curl -X POST https://api.sendinblue.com/v3/smtp/email \
+          -H "api-key: $SENDINBLUE_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "sender": { "email": "'"$SENDINBLUE_SENDER_EMAIL"'" },
+            "to": [ { "email": "'"$SENDINBLUE_RECIPIENT_EMAIL"'" } ],
+            "subject": "'"$EMAIL_SUBJECT"'",
+            "htmlContent": "<html><body><p>'"$EMAIL_BODY"'</p></body></html>",
+            "attachment": [ { "url": "file://allure-report/index.html", "name": "Allure_Report.html" } ]
+        }'
