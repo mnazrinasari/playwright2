@@ -6,10 +6,10 @@ const copyFile = promisify(fs.copyFile);
 const moment = require('moment');  // We'll use moment.js to generate a timestamp for filenames
 
 // Centralize the paths for both the login and product Excel files
-const configFilePath = path.resolve(__dirname, './test-data/accounttestdata.xlsx'); // Path to the login Excel file
-const productFilePath = path.resolve(__dirname, './test-data/producttestdata.xlsx'); // Path to the product Excel file
-const productAddedFilePath = path.resolve(__dirname, './test-data/productdetails.xlsx');  // Path to the new file where added product data will be written
-const addressDetailsFilePath = path.resolve(__dirname, './test-data/addressdetails.xlsx'); // New path for storing address data
+const configFilePath = path.resolve(__dirname, './test-data/accounttestdata.csv'); // Path to the login Excel file
+const productFilePath = path.resolve(__dirname, './test-data/producttestdata.csv'); // Path to the product Excel file
+const productAddedFilePath = path.resolve(__dirname, './test-data/productdetails.csv');  // Path to the new file where added product data will be written
+const addressDetailsFilePath = path.resolve(__dirname, './test-data/addressdetails.csv'); // New path for storing address data
 
 
 

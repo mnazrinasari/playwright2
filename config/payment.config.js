@@ -1,7 +1,7 @@
 const xlsx = require('xlsx');
 const path = require('path');
 
-const configFilePath = path.resolve(__dirname, '../test-data/accounttestdata.xlsx'); // Path to your Excel file
+const configFilePath = path.resolve(__dirname, '../test-data/accounttestdata.csv'); // Path to your Excel file
 
 function getPaymentConfig(environment) {
   const workbook = xlsx.readFile(configFilePath);

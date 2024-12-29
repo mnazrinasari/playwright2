@@ -42,6 +42,18 @@ jobs:
         path: allure-report/
         retention-days: 30
 
+    - name: Deploy Allure report to GitHub Pages
+      run: |
+        # Deploy Allure report to GitHub Pages
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git clone --branch gh-pages https://github.com/${{ github.repository }}.git github-pages
+        cp -r allure-report/* github-pages/
+        cd github-pages
+        git add .
+        git commit -m "Deploy Allure report"
+        git push
+
     - name: Send email with Allure report link using Sendinblue API
       if: ${{ always() }}
       run: |
@@ -54,7 +66,7 @@ jobs:
         SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
         SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
         EMAIL_SUBJECT="Playwright Tests Completed - Allure Report"
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://mnazrinasari.github.io/playwright2/allure-report/index.html"
 
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \

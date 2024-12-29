@@ -2,7 +2,7 @@ const xlsx = require('xlsx');
 const path = require('path');
 
 // Path to your Excel file (ensure the path is correct)
-const configFilePath = path.resolve(__dirname, '../test-data/accounttestdata.xlsx'); // Adjust path if needed
+const configFilePath = path.resolve(__dirname, '../test-data/accounttestdata.csv'); // Adjust path if needed
 
 // Function to read account information based on the environment
 function getAccountInfoConfig(environment) {
