@@ -43,7 +43,7 @@ test.describe('Login Tests', () => {
 
   test('Able to login with valid credentials', async () => {
     const loginpage = new LoginPage(page);
-    expect(await loginPage.getPageURL()).toMatch(/login/);
+    expect(await loginpage.getPageURL()).toMatch(/login/);
     expect(loginpage.getPageURL());
     const retrievedUserName = await loginpage.getuserName();
     const expectedLoggedInMessage = `Logged in as ${username}`;
