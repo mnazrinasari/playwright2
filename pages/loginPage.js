@@ -4,10 +4,16 @@ class LoginPage {
     constructor(page) {
         this.page = page;
         this.userName = page.locator('a b');
+        this.pageURL = page.url();
 
     }
 
     
+    async getPageURL(){
+        const pageURL = await this.cartURL;
+        return pageURL;
+  
+    }
     async getuserName(){
         const username = await this.userName;
         await username.waitFor({ state: 'attached' });

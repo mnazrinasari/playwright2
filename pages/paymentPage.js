@@ -9,7 +9,14 @@ class PaymentPage {
         this.expirationMM = page.locator('[data-qa="expiry-month"]');
         this.expirationYYYY = page.locator('[data-qa="expiry-year"]');
         this.continuePay = page.locator("[data-qa='pay-button']");
+        this.pageURL = page.url();
 
+    }
+
+    async getPageURL(){
+        const pageURL = await this.cartURL;
+        return pageURL;
+  
     }
 
     // Get cart details and save them to an Excel file

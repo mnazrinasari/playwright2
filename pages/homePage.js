@@ -16,6 +16,7 @@ class HomePage {
         this.deleteAccountMessage = page.getByRole('heading', { name: 'Account Deleted!' });
         this.deleteConfirmButton = page.locator("[data-qa='continue-button']");
         this.loggedinUser = page.locator("li:has-text('Logged in as')");
+        this.pageURL = page.url();
 
         // Menu Locators
         this.homepage = page.locator('[href="/"]').first();
@@ -25,6 +26,12 @@ class HomePage {
         this.deleteAccountButton = page.locator("[href='/delete_account']");
     }
 
+
+    async getPageURL(){
+        const pageURL = await this.cartURL;
+        return pageURL;
+  
+    }
     // Method to visit a page
     async navigateToPage(section) {
         switch (section) {

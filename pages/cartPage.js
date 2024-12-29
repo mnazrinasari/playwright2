@@ -3,9 +3,16 @@ const { writeProductDataToExcel } = require('../utils/excel.util');  // Importin
 class CartPage {
     constructor(page) {
         this.page = page;
-        this.cartRowsLocator = this.page.locator('tbody tr'); // Rows for each product in the cart
-        this.proceedtoCheckoutpage = this.page.locator('[class="btn btn-default check_out"]');
-        this.pageName = this.page.locator('[class="active"]');
+        this.cartRowsLocator = page.locator('tbody tr'); // Rows for each product in the cart
+        this.proceedtoCheckoutpage = page.locator('[class="btn btn-default check_out"]');
+        this.pageName = page.locator('[class="active"]');
+        this.pageURL = page.url();
+
+    }
+
+    async getPageURL(){
+        const pageURL = await this.cartURL;
+        return pageURL;
 
     }
 
