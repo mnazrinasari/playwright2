@@ -1,5 +1,5 @@
 // product.config.js
-const { readProductData } = require('../utils'); // Import the readProductData function from utils
+const { readProductData } = require('../utils/excel.util'); // Import the readProductData function from utils
 
 // Function to load product data for the given environment
 function loadProductConfig(environment) {

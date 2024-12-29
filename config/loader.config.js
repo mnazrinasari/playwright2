@@ -1,7 +1,7 @@
 // loader.config.js
-const { getEnvironmentConfig } = require('./environment.config');
-const { getPaymentConfig } = require('./payment.config');
-const { getAccountInfoConfig } = require('./account.config');
+const { loadEnvironmentConfig } = require('./environment.config');
+const { loadPaymentConfig } = require('./payment.config');
+const { loadAddressConfig } = require('./address.config');
 const { loadProductConfig } = require('./product.config');  // Import the new product config
 
 // Get the environment from process.env or default to 'test'
@@ -10,9 +10,9 @@ const environment = process.env.TEST_ENV || 'test';  // Default to 'test' if no 
 // Main function to load configuration based on the environment
 function loadConfig() {
   // Load environment, payment, and account-related config
-  const environmentConfig = getEnvironmentConfig(environment);
-  const paymentConfig = getPaymentConfig(environment);
-  const accountInfoConfig = getAccountInfoConfig(environment);
+  const environmentConfig = loadEnvironmentConfig(environment);
+  const paymentConfig = loadPaymentConfig(environment);
+  const addressConfig = loadAddressConfig(environment);
 
   // Load product config (includes both product details and product names)
   const { 
@@ -34,19 +34,19 @@ function loadConfig() {
     username: environmentConfig.username,
     password: environmentConfig.password,
     //payment details
-    nameOnCard: paymentConfig.nameOnCard,
+    cardName: paymentConfig.cardName,
     cardNumber: paymentConfig.cardNumber,
     cvc: paymentConfig.cvc,
     expirationMM: paymentConfig.expirationMM,
     expirationYYYY: paymentConfig.expirationYYYY,
     //address details
-    name: accountInfoConfig.name,
-    addressLine1: accountInfoConfig.addressLine1,
-    addressLine2: accountInfoConfig.addressLine2,
-    addressLine3: accountInfoConfig.addressLine3,
-    addressLine4: accountInfoConfig.addressLine4,
-    country: accountInfoConfig.country,
-    phoneNumber: accountInfoConfig.phoneNumber,
+    name: addressConfig.name,
+    addressLine1: addressConfig.addressLine1,
+    addressLine2: addressConfig.addressLine2,
+    addressLine3: addressConfig.addressLine3,
+    addressLine4: addressConfig.addressLine4,
+    country: addressConfig.country,
+    phoneNumber: addressConfig.phoneNumber,
     // Product details
     products,                // Full product data
     productNames,            // Product names

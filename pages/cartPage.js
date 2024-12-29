@@ -1,4 +1,4 @@
-const { writeProductDataToExcel } = require('../utils');  // Importing the write function from util.js
+const { writeProductDataToExcel } = require('../utils/excel.util');  // Importing the write function from util.js
 
 class CartPage {
     constructor(page) {

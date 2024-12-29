@@ -1,15 +1,16 @@
-const { writeProductDataToExcel, writeAddressDataToExcel } = require('../utils');  // Importing the write function from util.js
+const { writeProductDataToExcel, writeAddressDataToExcel } = require('../utils/excel.util');  // Importing the write function from util.js
 
 class CheckoutPage {
     constructor(page) {
         this.page = page;
 
         // Define locators for cart elements
-        this.checkoutRowsLocator = this.page.locator('tbody tr:has(td h4 a)'); // Rows for each product in the cart
-        this.proceedtoPaymentPage= this.page.locator('[href="/payment"]');
-        this.pageName = this.page.locator('[class="active"]');
-        this.deliveryAddress = this.page.locator('[id="address_delivery"]');
-        this.billingAddress = this.page.locator('[id="address_invoice"]');
+        this.checkoutRowsLocator = page.locator('tbody tr:has(td h4 a)'); // Rows for each product in the cart
+        this.proceedtoPaymentPage= page.locator('[href="/payment"]');
+        this.pageName = page.locator('[class="active"]');
+        this.deliveryAddress = page.locator('[id="address_delivery"]');
+        this.billingAddress = page.locator('[id="address_invoice"]');
+        this.totalPrice = page.locator('[class="cart_total_price"]');
 
     }
 
@@ -116,7 +117,10 @@ class CheckoutPage {
       return retrievedAddress;
     }
     
-      
+    async getCheckoutTotal(){
+      const checkoutTotal = await this.totalPrice.last().textContent();
+      return Number(checkoutTotal.replace('Rs. ',''));
+    }
     
       
       
