@@ -28,10 +28,10 @@ class HomePage {
 
 
     async getPageURL(){
-        const pageURL = await this.cartURL;
+        const pageURL = await this.pageURL;
         return pageURL;
-  
     }
+
     // Method to visit a page
     async navigateToPage(section) {
         switch (section) {

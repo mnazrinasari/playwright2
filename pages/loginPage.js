@@ -10,10 +10,10 @@ class LoginPage {
 
     
     async getPageURL(){
-        const pageURL = await this.cartURL;
+        const pageURL = await this.pageURL;
         return pageURL;
-  
     }
+
     async getuserName(){
         const username = await this.userName;
         await username.waitFor({ state: 'attached' });

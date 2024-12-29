@@ -8,11 +8,9 @@ class OrderPlacedPage {
         this.pageURL = page.url();
 
     }
-
     async getPageURL(){
-        const pageURL = await this.cartURL;
+        const pageURL = await this.pageURL;
         return pageURL;
-  
     }
     
     async getSuccessMessage(){

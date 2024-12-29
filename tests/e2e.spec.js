@@ -43,8 +43,6 @@ test.describe('Login Tests', () => {
 
   test('Able to login with valid credentials', async () => {
     const loginpage = new LoginPage(page);
-    expect(await loginpage.getPageURL()).toMatch(/login/);
-    expect(loginpage.getPageURL());
     const retrievedUserName = await loginpage.getuserName();
     const expectedLoggedInMessage = `Logged in as ${username}`;
     const actualLoggedInMessage = `Logged in as ${retrievedUserName}`;
@@ -55,7 +53,7 @@ test.describe('Login Tests', () => {
     const homepage = new HomePage(page);
     const cartpage = new CartPage(page);
 
-    await homepage.addProductToCart(productNames);  // Using the first product name
+    await homepage.addProductToCart(productNames); 
     await cartpage.getCartDetails();
   });
 

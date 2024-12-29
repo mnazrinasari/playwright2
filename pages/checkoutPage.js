@@ -15,6 +15,11 @@ class CheckoutPage {
 
     }
 
+    async getPageURL(){
+      const pageURL = await this.pageURL;
+      return pageURL;
+  }
+
     // Get cart details and save them to an Excel file
     async getCheckoutDetails() {
         // Fetch the rows of the cart

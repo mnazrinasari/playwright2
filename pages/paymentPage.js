@@ -14,9 +14,8 @@ class PaymentPage {
     }
 
     async getPageURL(){
-        const pageURL = await this.cartURL;
+        const pageURL = await this.pageURL;
         return pageURL;
-  
     }
 
     // Get cart details and save them to an Excel file
