@@ -42,7 +42,7 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    - name: Send email with Allure report attachment using Sendinblue API
+    - name: Send email with Allure report link using Sendinblue API
       if: ${{ always() }}
       run: |
         # Install curl for API request
@@ -54,8 +54,8 @@ jobs:
         SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
         SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
         EMAIL_SUBJECT="Playwright Tests Completed - Allure Report"
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the attachment."
-        
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
+
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
           -H "api-key: $SENDINBLUE_API_KEY" \
@@ -64,6 +64,5 @@ jobs:
             "sender": { "email": "'"$SENDINBLUE_SENDER_EMAIL"'" },
             "to": [ { "email": "'"$SENDINBLUE_RECIPIENT_EMAIL"'" } ],
             "subject": "'"$EMAIL_SUBJECT"'",
-            "htmlContent": "<html><body><p>'"$EMAIL_BODY"'</p></body></html>",
-            "attachment": [ { "url": "file://allure-report/index.html", "name": "Allure_Report.html" } ]
+            "htmlContent": "<html><body><p>'"$EMAIL_BODY"'</p></body></html>"
         }'
