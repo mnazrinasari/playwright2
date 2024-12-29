@@ -88,7 +88,7 @@ test.describe('Login Tests', () => {
     }
   });
 
-  test('Test able to Proceed Checkout', async () => {
+  test('Able to Proceed Checkout', async () => {
     const cartpage = new CartPage(page);
     const checkoutpage = new CheckoutPage(page);
 
