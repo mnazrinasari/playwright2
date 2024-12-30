@@ -6,12 +6,11 @@ class CartPage {
         this.cartRowsLocator = page.locator('tbody tr'); // Rows for each product in the cart
         this.proceedtoCheckoutpage = page.locator('[class="btn btn-default check_out"]');
         this.pageName = page.locator('[class="active"]');
-        this.pageURL = page.url();
 
     }
 
     async getPageURL(){
-        const pageURL = await this.pageURL;
+        const pageURL = await this.page.url();
         return pageURL;
     }
 
