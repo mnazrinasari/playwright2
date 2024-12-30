@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+  schedule:
+    # Daily trigger at 9 AM UTC
+    - cron: '0 9 * * *'  # This triggers the workflow every day at 9 AM UTC
+
+    # Weekly trigger every Monday at 9 AM UTC
+    # - cron: '0 9 * * 1'  # This triggers the workflow every Monday at 9 AM UTC
 
 jobs:
   test:
