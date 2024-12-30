@@ -4,15 +4,14 @@ class LoginPage {
     constructor(page) {
         this.page = page;
         this.userName = page.locator('a b');
-        this.pageURL = page.url();
-
     }
 
     
     async getPageURL(){
-        const pageURL = await this.pageURL;
+        const pageURL = await this.page.url();
         return pageURL;
     }
+
 
     async getuserName(){
         const username = await this.userName;

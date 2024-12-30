@@ -11,12 +11,11 @@ class CheckoutPage {
         this.deliveryAddress = page.locator('[id="address_delivery"]');
         this.billingAddress = page.locator('[id="address_invoice"]');
         this.totalPrice = page.locator('[class="cart_total_price"]');
-        this.pageURL = page.url();
 
     }
 
     async getPageURL(){
-      const pageURL = await this.pageURL;
+      const pageURL = await this.page.url();
       return pageURL;
   }
 

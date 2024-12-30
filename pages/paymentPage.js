@@ -9,12 +9,10 @@ class PaymentPage {
         this.expirationMM = page.locator('[data-qa="expiry-month"]');
         this.expirationYYYY = page.locator('[data-qa="expiry-year"]');
         this.continuePay = page.locator("[data-qa='pay-button']");
-        this.pageURL = page.url();
-
     }
 
     async getPageURL(){
-        const pageURL = await this.pageURL;
+        const pageURL = await this.page.url();
         return pageURL;
     }
 

@@ -9,6 +9,7 @@ const { loadConfig } = require('../config/loader.config');
 const { createPageContext, captureScreenshotOnFailure, cleanupContext } = require('../utils/context.util');
 const {  getPageProductDataForAssertion, getAddressDataByType } = require('../utils/excel.util');
 
+//bug: https://github.com/microsoft/playwright/issues/16119
 
 
 const config = loadConfig();  // The loader config will automatically choose the environment based on TEST_ENV or default to 'test'
@@ -42,11 +43,13 @@ test.describe('Login Tests', () => {
   });
 
   test('Able to login with valid credentials', async () => {
+    const homepage = new HomePage(page);
     const loginpage = new LoginPage(page);
+    await expect(await homepage.getPageURL()).toMatch(baseUrl)
     const retrievedUserName = await loginpage.getuserName();
     const expectedLoggedInMessage = `Logged in as ${username}`;
     const actualLoggedInMessage = `Logged in as ${retrievedUserName}`;
-    expect(actualLoggedInMessage).toBe(expectedLoggedInMessage);
+    expect.soft(actualLoggedInMessage).toBe(expectedLoggedInMessage);
   });
 
   test('Able to add product to cart', async () => {
@@ -54,7 +57,9 @@ test.describe('Login Tests', () => {
     const cartpage = new CartPage(page);
 
     await homepage.addProductToCart(productNames); 
+    await expect(await cartpage.getPageURL()).toMatch('/view_cart')
     await cartpage.getCartDetails();
+
   });
 
   test('Validate product data on Homepage', async () => {
@@ -74,7 +79,7 @@ test.describe('Login Tests', () => {
 
   test('Validate product data on Cart', async () => {
     const homepageData = await getPageProductDataForAssertion('Shopping Cart');
-    expect(Array.isArray(homepageData)).toBe(true);
+    expect.soft(Array.isArray(homepageData)).toBe(true);
 
     for (let index = 0; index < homepageData.length; index++) {
       const product = homepageData[index];
@@ -92,7 +97,9 @@ test.describe('Login Tests', () => {
     const cartpage = new CartPage(page);
     const checkoutpage = new CheckoutPage(page);
 
+
     await cartpage.proceedtoCheckout();
+    await expect(await checkoutpage.getPageURL()).toMatch('/checkout')
     await checkoutpage.getCheckoutDetails();
     await checkoutpage.getAddressDetails('delivery');
     await checkoutpage.getAddressDetails('billing');
@@ -129,8 +136,7 @@ test.describe('Login Tests', () => {
   test('Validate product data on Checkout', async () => {
     const checkoutpage = new CheckoutPage(page);
     const homepageData = await getPageProductDataForAssertion('Checkout');
-    expect(homepageData).toBeDefined();
-    expect(Array.isArray(homepageData)).toBe(true);
+
     let productTotal = 0;
     for (let index = 0; index < homepageData.length; index++) {
       const product = homepageData[index];
@@ -152,6 +158,7 @@ test.describe('Login Tests', () => {
     const paymentpage = new PaymentPage(page);
 
     await checkoutpage.proceedtoPayment();
+    await expect(await paymentpage.getPageURL()).toMatch('/payment')
     await paymentpage.enterPaymentDetails(
       cardName,
       cardNumber,
@@ -166,16 +173,22 @@ test.describe('Login Tests', () => {
     const orderplacedpage = new OrderPlacedPage(page);
 
     await paymentpage.proceedtoOrder();
+    await expect(await orderplacedpage.getPageURL()).toMatch('/payment_done')
     const successMessage = 'Congratulations! Your order has been confirmed!';
     const actualMessage = await orderplacedpage.getSuccessMessage();
     await expect.soft(actualMessage).toBe(successMessage);
 
+    
+
   });
 
   test('Verify homepage is displayed after click continue at Complete Order', async () => {
+    const homepage = new HomePage(page);
     const orderplacedpage = new OrderPlacedPage(page);
 
     await orderplacedpage.proceedContinue();
+    await expect(await homepage.getPageURL()).toMatch(baseUrl)
+
 
   });
 });

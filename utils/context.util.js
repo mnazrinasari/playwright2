@@ -1,27 +1,37 @@
-import { HomePage } from '../pages/homePage';  // Assuming you have this page object
+import { HomePage } from '../pages/homePage';  // Import your page object for login
 import { clearProductDetailsFile, clearAddressDetailsFile } from './excel.util';  // Your cleanup functions
 
 // Function to create a new browser context and page
 export const createPageContext = async ({ browser, baseUrl, username, password }) => {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
-  // Set the viewport size to simulate a maximized window (1920x1080 resolution as an example)
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.emulateMedia({ media: 'screen' }); 
-
-  // Set up page state, like logging in
-  const homepage = new HomePage(page);  // Assuming you have this page object
+  // Ensure username and password are defined
   if (!username || !password) {
     throw new Error('Username or Password is undefined');
   }
+
+  // Create a new browser context
+  const context = await browser.newContext();
+
+  // Create a new page in the context
+  const page = await context.newPage();
+
+  // Set viewport size to simulate a maximized window (optional)
+  await page.setViewportSize({ width: 1280, height: 800 });
   
-  // Navigate to the home page, login, etc.
+  // Emulate media for desktop simulation
+  await page.emulateMedia({ media: 'screen' });
+
+  // Navigate to the base URL
   await page.goto(baseUrl);
+
+  // Assuming HomePage is the page object with login functionality
+  const homepage = new HomePage(page);
+
+  // Navigate to login page and login using credentials
   await homepage.navigateToPage('login');
   await homepage.loginExistingUser(username, password);
 
-  return { browser, context, page };
+  // Return context and page to be shared across tests
+  return { context, page };
 };
 
 // Function to handle screenshot capture on test failure
@@ -36,14 +46,33 @@ export const captureScreenshotOnFailure = async ({ page, testInfo }) => {
 // Function to clean up resources at the end of the test suite
 export const cleanupContext = async (browser, context) => {
   console.log('Performing cleanup...');
-  await clearProductDetailsFile();
-  await clearAddressDetailsFile();
 
-  if (context) {
-    console.log('Closing browser context...');
-    await context.close();
+  // Cleanup any resources if necessary (Excel files, test data, etc.)
+  try {
+    await clearProductDetailsFile();
+    await clearAddressDetailsFile();
+    console.log('Cleared test data files.');
+  } catch (error) {
+    console.error('Error clearing test data files:', error);
   }
-  if (browser) {
-    await browser.close();  // Ensure to close the browser as well
+
+  // Close the context and browser only if necessary
+  try {
+    if (context) {
+      console.log('Closing browser context...');
+      await context.close();
+    } else {
+      console.log('No context found, skipping context close.');
+    }
+
+    if (browser) {
+      console.log('Closing browser...');
+      await browser.close();  // Ensure the browser is properly closed
+    } else {
+      console.log('No browser found, skipping browser close.');
+    }
+  } catch (error) {
+    console.error('Error during cleanup (closing context/browser):', error);
   }
+
 };
