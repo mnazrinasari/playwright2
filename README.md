@@ -5,7 +5,7 @@ Prerequisite: Install Node.js
 1. Open terminal or cmd
    
 2. Clone this repo
-   git clone https://github.com/your-repository-name.git](https://github.com/mnazrinasari/playwright2.git
+   git clone your-repository-name
 
 3. Change into the project directory:
    cd your-repository-name
