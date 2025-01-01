@@ -1,9 +1,10 @@
 How to setup and run the test locally?
+
 Prerequisite: Install Node.js
 
 1. Open terminal or cmd
    
-2. clone this repo
+2. Clone this repo
    git clone https://github.com/your-repository-name.git](https://github.com/mnazrinasari/playwright2.git
 
 3. Change into the project directory:
