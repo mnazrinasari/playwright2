@@ -31,4 +31,4 @@ class PaymentPage {
     }
 }
 
-module.exports = PaymentPage;
+module.exports = { PaymentPage };

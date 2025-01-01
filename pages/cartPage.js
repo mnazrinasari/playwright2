@@ -57,4 +57,4 @@ async proceedtoCheckout(){
 
 }
 
-module.exports = CartPage;
+module.exports = { CartPage };

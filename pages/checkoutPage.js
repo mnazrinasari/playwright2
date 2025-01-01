@@ -127,10 +127,7 @@ class CheckoutPage {
       return Number(checkoutTotal.replace('Rs. ',''));
     }
     
-      
-      
-
 
 }
 
-module.exports = CheckoutPage;
+module.exports = { CheckoutPage };

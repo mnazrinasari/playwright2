@@ -1,10 +1,10 @@
 const { test, expect } = require('@playwright/test');
-const LoginPage = require('../pages/loginPage');
 const { HomePage } = require('../pages/homePage');
-const CartPage = require('../pages/cartPage');
-const CheckoutPage = require('../pages/checkoutPage');
-const PaymentPage = require('../pages/paymentPage');
-const OrderPlacedPage = require('../pages/orderPlacedPage');
+const { LoginPage }= require('../pages/loginPage');
+const { CartPage } = require('../pages/cartPage');
+const { CheckoutPage } = require('../pages/checkoutPage');
+const { PaymentPage } = require('../pages/paymentPage');
+const { OrderPlacedPage } = require('../pages/orderPlacedPage');
 const { loadConfig } = require('../config/loader.config');
 const { createPageContext, captureScreenshotOnFailure, cleanupContext } = require('../utils/context.util');
 const { getPageProductDataForAssertion, getAddressDataByType } = require('../utils/excel.util');
@@ -171,11 +171,15 @@ test.describe('Login Tests', () => {
     const successMessage = 'Congratulations! Your order has been confirmed!';
     const actualMessage = await orderplacedpage.getSuccessMessage();
     await expect.soft(actualMessage).toBe(successMessage);
+    // await expect(actualMessage).toBe('failed');
+
+
   });
 
   // Test 11: Verify homepage after completing the order
   test('Verify homepage is displayed after click continue at Complete Order', async () => {
     await orderplacedpage.proceedContinue();
     await expect(await homepage.getPageURL()).toMatch(baseUrl);
+
   });
 });

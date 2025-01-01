@@ -26,4 +26,4 @@ class OrderPlacedPage {
 
 }
 
-module.exports = OrderPlacedPage;
+module.exports = { OrderPlacedPage };

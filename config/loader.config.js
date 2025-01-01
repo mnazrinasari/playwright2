@@ -4,8 +4,13 @@ const { loadPaymentConfig } = require('./payment.config');
 const { loadAddressConfig } = require('./address.config');
 const { loadProductConfig } = require('./product.config');  // Import the new product config
 
-// Get the environment from process.env or default to 'test'
-const environment = process.env.TEST_ENV || 'test';  // Default to 'test' if no environment is specified
+// Get the environment from process.env
+let environment = process.env.TEST_ENV;
+
+//////////////////////////////////////////////////
+environment = 'test'; //SET YOUR ENVIRONMENT HERE
+//////////////////////////////////////////////////
+
 
 // Main function to load configuration based on the environment
 function loadConfig() {
