@@ -8,7 +8,7 @@ Prerequisite: Install Node.js
    git clone https://github.com/your-repository-name.git](https://github.com/mnazrinasari/playwright2.git
 
 3. Change into the project directory:
-   cd <your-repository-name>
+   cd your-repository-name
 
 4. Install project dependencies
    npm install
