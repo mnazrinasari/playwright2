@@ -31,6 +31,15 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    # Step to set TEST_ENV from loader.config.js
+    - name: Set TEST_ENV from loader.config.js
+      run: |
+        # Run loader.config.js to read the TEST_ENV
+        node -e "require('../../config/loader.config');" # Make sure this path is correct based on your directory structure
+
+        # Export TEST_ENV to GitHub Actions environment
+        echo "TEST_ENV=$(node -e 'console.log(require(\"../../config/loader.config\").environment)')" >> $GITHUB_ENV
+
     - name: Run Playwright tests
       run: npx playwright test
 

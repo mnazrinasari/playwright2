@@ -53,13 +53,23 @@ module.exports = defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     browserName: 'firefox',
-    //     headless: false,}, // Change to true if you want headless mode
-    // },
+    {
+      name: 'firefox',
+      use: {
+        browserName: 'firefox',
+        headless: false,}, // Change to true if you want headless mode
+    },
 
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+
+    /* Test against branded browsers. */
+    {
+      name: 'Microsoft Edge',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+    },
 
     /* Test against mobile viewports. */
     // {
@@ -71,11 +81,7 @@ module.exports = defineConfig({
     //   use: { ...devices['iPhone 12'] },
     // },
 
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
+
     // {
     //   name: 'Google Chrome',
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
