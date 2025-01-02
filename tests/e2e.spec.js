@@ -19,7 +19,7 @@ const {
 } = config;
 
 // Extend test with page context and page objects
-test.describe('Login Tests', () => {
+test.describe('E2E - Online Ordering', () => {
   let page;
   let context;
   let browser;
