@@ -33,14 +33,12 @@ jobs:
 
     - name: Set TEST_ENV from loader.config.js
       run: |
-        # Run the script to get the environment variable and set it in $GITHUB_ENV
-        node ./get-test-env.js > env_output.txt
-        echo "TEST_ENV=$(cat env_output.txt)" >> $GITHUB_ENV
+        node get-test-env.js >> $GITHUB_ENV
 
     - name: Run Playwright tests
       run: npx playwright test
       env:
-        TEST_ENV: ${{ secrets.TEST_ENV }}  # Ensure this is passed to the test run
+        TEST_ENV: ${{ secrets.TEST_ENV }}
 
 
     - name: Install Allure Commandline (via npm)
