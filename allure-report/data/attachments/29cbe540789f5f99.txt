@@ -1,0 +1,2 @@
+No address data found for type: billing
+Test failed. Screenshot captured at test-results/screenshots/Validate billing address details.png
