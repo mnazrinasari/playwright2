@@ -31,6 +31,11 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    - name: Set TEST_ENV from loader.config.js
+      run: |
+        node -e "require('${{ github.workspace }}/config/loader.config');"  # Use absolute path
+        echo "TEST_ENV=$(node -e 'console.log(require(\"${{ github.workspace }}/config/loader.config\").environment)')" >> $GITHUB_ENV
+
     - name: Run Playwright tests
       run: npx playwright test
 
