@@ -1,2 +1,0 @@
-No address data found for type: delivery
-Test failed. Screenshot captured at test-results/screenshots/Validate delivery address details.png

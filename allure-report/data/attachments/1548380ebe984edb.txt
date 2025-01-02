@@ -1,1 +1,0 @@
-Test failed. Screenshot captured at test-results/screenshots/Proceed Payment.png

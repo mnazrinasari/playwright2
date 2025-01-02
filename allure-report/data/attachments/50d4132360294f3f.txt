@@ -1,9 +1,0 @@
-Promise {
-  <pending>,
-  [Symbol(async_id_symbol)]: 96128,
-  [Symbol(trigger_async_id_symbol)]: 93500,
-  [Symbol(kResourceStore)]: undefined
-}
-Congratulations! Your order has been confirmed!
-Performing cleanup...
-Closing browser context...
