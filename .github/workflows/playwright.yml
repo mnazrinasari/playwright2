@@ -31,23 +31,17 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-         # Check if loader.config.js exists and its content
-    - name: Debug loader.config.js location and content
-      run: |
-        if [ -f "${{ github.workspace }}/config/loader.config.js" ]; then
-          echo "loader.config.js found."
-          cat "${{ github.workspace }}/config/loader.config.js"
-        else
-          echo "loader.config.js not found."
-        fi
-
     - name: Set TEST_ENV from loader.config.js
       run: |
-        echo "TEST_ENV=$(node -e \"console.log(require('${{ github.workspace }}/config/loader.config').environment)\")" >> $GITHUB_ENV
-
+        # Run the script to get the environment variable and set it in $GITHUB_ENV
+        node ./get-test-env.js > env_output.txt
+        echo "TEST_ENV=$(cat env_output.txt)" >> $GITHUB_ENV
 
     - name: Run Playwright tests
       run: npx playwright test
+      env:
+        TEST_ENV: ${{ secrets.TEST_ENV }}  # Ensure this is passed to the test run
+
 
     - name: Install Allure Commandline (via npm)
       run: |
