@@ -1,20 +1,17 @@
 // fixtures/fixture.js
-const { loadConfig } = require('../config/loader.config');  // Import the loadConfig function
+const { loadConfig } = require('../config/loader.config');
+const { HomePage } = require('../pages/homePage');
+const { LoginPage } = require('../pages/loginPage');
+const { CartPage } = require('../pages/cartPage');
 
-const config = require('../config/loader.config');
-// Debug the config to check what's being returned
-console.log('Loaded Config:', config);
+// Load configuration
+const config = loadConfig();  
 
 const { baseUrl, username, password, productNames } = config;  // Destructure the loaded config
 
 if (!baseUrl) {
   throw new Error('Base URL is undefined. Please check your configuration.');
 }
-// Load configuration inside the fixture
-
-
-// Debugging statement to check configuration values
-console.log('Loaded Config:', config);  // Check if the configuration is loaded
 
 // This fixture will handle the login action
 export const loginFixture = async ({ page }) => {
