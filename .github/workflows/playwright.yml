@@ -2,13 +2,9 @@ name: Playwright Tests with Allure Report and Sendinblue Email
 
 on:
   push:
-    branches: 
-      - main
-      - master
+    branches: [main, master]
   pull_request:
-    branches: 
-      - main
-      - master
+    branches: [main, master]
   workflow_dispatch:
   schedule:
     # Daily trigger at 9 AM UTC
@@ -35,12 +31,16 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    - name: Debug loader.config.js
+      run: |
+        cat ${{ github.workspace }}/config/loader.config  # Debugging: Ensure this file exists and has content
+
     - name: Set TEST_ENV from loader.config.js
       run: |
-        echo "TEST_ENV=$(node -e 'console.log(require(\"${{ github.workspace }}/config/loader.config\").environment)')" >> $GITHUB_ENV
+        echo "TEST_ENV=$(node -e \"console.log(require('${{ github.workspace }}/config/loader.config').environment)\")" >> $GITHUB_ENV
 
     - name: Run Playwright tests
-      run: npx playwright test --headed=false
+      run: npx playwright test
       env:
         TEST_ENV: ${{ secrets.TEST_ENV }}  # Ensure this is passed to the test run
 
