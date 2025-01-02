@@ -38,6 +38,7 @@ jobs:
 
     - name: Set TEST_ENV from loader.config.js
       run: |
+        echo "Running from: $(pwd)"  # Debugging: Print current directory
         node "${{ github.workspace }}/get-test-env.js" >> $GITHUB_ENV
 
     - name: Run Playwright tests
