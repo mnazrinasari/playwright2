@@ -1,1 +1,0 @@
-Test failed. Screenshot captured at test-results/screenshots/Able to login with valid credentials.png
