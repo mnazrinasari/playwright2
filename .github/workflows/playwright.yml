@@ -34,11 +34,11 @@ jobs:
     # Step to set TEST_ENV from loader.config.js
     - name: Set TEST_ENV from loader.config.js
       run: |
-        # Run loader.config.js to read the TEST_ENV
-        node -e "require('../../config/loader.config');" # Make sure this path is correct based on your directory structure
+        # Ensure the path to loader.config.js is correct
+        node -e "require('../config/loader.config');"  # Adjust path if necessary
 
-        # Export TEST_ENV to GitHub Actions environment
-        echo "TEST_ENV=$(node -e 'console.log(require(\"../../config/loader.config\").environment)')" >> $GITHUB_ENV
+        # Export TEST_ENV from loader.config.js into GitHub Actions environment
+        echo "TEST_ENV=$(node -e 'console.log(require(\"../config/loader.config\").environment)')" >> $GITHUB_ENV
 
     - name: Run Playwright tests
       run: npx playwright test
@@ -76,7 +76,6 @@ jobs:
         git pull --rebase origin gh-pages
 
         # Copy the Allure report into the 'gh-pages' directory
-        # Ensure that we copy the files into a folder named 'allure-report'
         mkdir -p allure-report
         cp -r ../allure-report/* allure-report/
 
