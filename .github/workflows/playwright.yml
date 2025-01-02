@@ -32,7 +32,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test --headed=false
 
     - name: Install Allure Commandline (via npm)
       run: |
