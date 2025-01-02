@@ -23,8 +23,12 @@ module.exports = defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // reporter: 'html',
   reporter: [
-    ['line'], // Default reporter
-    ['allure-playwright'], // Add Allure reporter
+    ['allure-playwright', {
+      outputFolder: 'allure-results',
+      suiteTitle: false,
+      detail: true,
+      environment: process.env.TEST_ENV || 'Not defined', // Ensure the environment variable is captured
+    }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 
