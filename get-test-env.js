@@ -6,5 +6,5 @@ const configPath = path.resolve(__dirname, 'config', 'loader.config.js');
 // Load the configuration module
 const config = require(configPath);
 
-// Output the environment
-console.log(config.environment);
+// Output the environment in the correct format for GitHub Actions
+console.log(`TEST_ENV=${config.environment}`);
