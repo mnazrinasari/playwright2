@@ -31,9 +31,14 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    - name: Debug current directory and files
+      run: |
+        echo "Current directory: $(pwd)"
+        ls -alh
+
     - name: Set TEST_ENV from loader.config.js
       run: |
-        node get-test-env.js >> $GITHUB_ENV
+        node "${{ github.workspace }}/get-test-env.js" >> $GITHUB_ENV
 
     - name: Run Playwright tests
       run: npx playwright test
