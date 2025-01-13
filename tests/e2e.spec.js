@@ -1,7 +1,21 @@
 const test = require('../fixtures/fixture');
 const { expect } = require('@playwright/test');
 const { loadConfig } = require('../config/loader.config');
+const { createPageContext, captureScreenshotOnFailure, cleanupContext } = require('../utils/context.util');
 
+
+
+let context;
+
+// Setup before tests
+test.beforeAll(async ({ browser }) => {
+  context = await browser.newContext();
+});
+
+// Cleanup after tests
+test.afterEach(async () => {
+  await cleanupContext(context);
+});
 
 
 test.describe('E2E - Online Ordering', () => {
@@ -13,34 +27,38 @@ test.describe('E2E - Online Ordering', () => {
 
 
 
-  // test('Able to login with valid credentials', async ({ loginWithValidCredentials, homepage, loginpage }) => {
-  //   await loginWithValidCredentials;
-  //   await expect(await homepage.getPageURL()).toMatch(baseUrl);
-  //   const retrievedUserName = await loginpage.getuserName();
-  //   const expectedLoggedInMessage = `Logged in as ${username}`;
-  //   const actualLoggedInMessage = `Logged in as ${retrievedUserName}`;
-  //   expect.soft(actualLoggedInMessage).toBe(expectedLoggedInMessage);
-  // });
+  test('Able to login with valid credentials', async ({ loginWithValidCredentials, homepage, loginpage }) => {
+    await loginWithValidCredentials;
+    await expect(await homepage.getPageURL()).toMatch(baseUrl);
+    const retrievedUserName = await loginpage.getuserName();
+    const expectedLoggedInMessage = `Logged in as ${username}`;
+    const actualLoggedInMessage = `Logged in as ${retrievedUserName}`;
+    expect.soft(actualLoggedInMessage).toBe(expectedLoggedInMessage);
+  });
 
-  test('Able to add product to cart', async ({ loginWithValidCredentials, addProductToCart, cartpage }) => {
+  test('Able to add product to cart', async ({ loginWithValidCredentials, addProductToCart, deleteProductToCart, cartpage }) => {
     await loginWithValidCredentials;
     await addProductToCart;
     await expect(await cartpage.getPageURL()).toMatch('/view_cart');
+    await deleteProductToCart;
   });
 
-  test('Validate product data on Homepage', async ({ loginWithValidCredentials, validateProductDataOnHomepage }) => {
+  test('Validate product data on Homepage', async ({ loginWithValidCredentials, addProductToCart, validateProductDataOnHomepage, deleteProductToCart }) => {
     await loginWithValidCredentials;
     await addProductToCart;
-    const homepageData = await validateProductDataOnHomepage();
+    const homepageData = await validateProductDataOnHomepage;
     for (let index = 0; index < homepageData.length; index++) {
       const product = homepageData[index];
-      expect.soft(product.name).toEqual(productNames[index]);
-      expect.soft(product.category).toEqual("");
-      expect.soft(product.price).toEqual(productPrices[index]);
-      expect.soft(product.quantity).toEqual(productQuantities[index]);
-      expect.soft(product.total).toEqual(productTotals[index]);
-      expect.soft(product.manualTotal).toEqual(productManualTotals[index]);
-    }
+      await expect.soft(product.name).toEqual(productNames[index]);
+      await expect.soft(product.category).toEqual("");
+      await expect.soft(product.price).toEqual(productPrices[index]);
+      await expect.soft(product.quantity).toEqual(productQuantities[index]);
+      await expect.soft(product.total).toEqual(productTotals[index]);
+      await expect.soft(product.manualTotal).toEqual(productManualTotals[index]);
+      console.log(product.manualTotal);
+      console.log(productManualTotals[index]);
+    }    
+    await deleteProductToCart;
   });
 
   // test('Validate product data on Cart', async ({ validateProductDataOnCart }) => {

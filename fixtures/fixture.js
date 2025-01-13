@@ -53,6 +53,10 @@ const test = base.extend({
         await cartpage.getCartDetails();
         await use();
     },
+    deleteProductToCart: async ({ cartpage }, use) => {
+        await cartpage.deleteProductToCart();
+        await use();
+    },
     validateProductDataOnHomepage: async ({ page }, use) => {
         const homepageData = await getPageProductDataForAssertion('Homepage');
         await use(homepageData);
