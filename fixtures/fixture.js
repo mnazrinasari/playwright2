@@ -1,58 +1,106 @@
-// fixtures/fixture.js
-const { loadConfig } = require('../config/loader.config');
+const { test: base, expect } = require('@playwright/test');
 const { HomePage } = require('../pages/homePage');
 const { LoginPage } = require('../pages/loginPage');
 const { CartPage } = require('../pages/cartPage');
+const { CheckoutPage } = require('../pages/checkoutPage');
+const { PaymentPage } = require('../pages/paymentPage');
+const { OrderPlacedPage } = require('../pages/orderPlacedPage');
+const { loadConfig } = require('../config/loader.config');
+const { captureScreenshotOnFailure, cleanupContext } = require('../utils/context.util');
+const { getPageProductDataForAssertion, getAddressDataByType } = require('../utils/excel.util');
 
-// Load configuration
-const config = loadConfig();  
+const config = loadConfig();
+const {
+  baseUrl, username, password, 
+  cardName, cardNumber, cvc, expirationMM, expirationYYYY, 
+  productNames, productThumbnails, productCategories, productPrices, productQuantities, productTotals, productManualTotals, 
+  name, addressLine1, addressLine2, addressLine3, addressLine4, country, phoneNumber
+} = config;
 
-const { baseUrl, username, password, productNames } = config;  // Destructure the loaded config
+const test = base.extend({
+    homepage: async ({ page }, use) => {
+        const homepage = new HomePage(page);
+        await use(homepage);
+    },
+    loginpage: async ({ page }, use) => {
+        const loginpage = new LoginPage(page);
+        await use(loginpage);
+    },
+    cartpage: async ({ page }, use) => {
+        const cartpage = new CartPage(page);
+        await use(cartpage);
+    },
+    checkoutpage: async ({ page }, use) => {
+        const checkoutpage = new CheckoutPage(page);
+        await use(checkoutpage);
+    },
+    paymentpage: async ({ page }, use) => {
+        const paymentpage = new PaymentPage(page);
+        await use(paymentpage);
+    },
+    orderplacedpage: async ({ page }, use) => {
+        const orderplacedpage = new OrderPlacedPage(page);
+        await use(orderplacedpage);
+    },
+    loginWithValidCredentials: async ({ page, homepage, loginpage }, use) => {
+        await page.goto(baseUrl);
+        await homepage.navigateToPage('login');
+        await homepage.loginExistingUser(username, password);
+        await use();
+    },
+    addProductToCart: async ({ homepage, cartpage }, use) => {
+        await homepage.addProductToCart(productNames);
+        await cartpage.getCartDetails();
+        await use();
+    },
+    validateProductDataOnHomepage: async ({ page }, use) => {
+        const homepageData = await getPageProductDataForAssertion('Homepage');
+        await use(homepageData);
+    },
+    validateProductDataOnCart: async ({ page }, use) => {
+        const cartData = await getPageProductDataForAssertion('Shopping Cart');
+        await use(cartData);
+    },
+    proceedToCheckout: async ({ cartpage, checkoutpage }, use) => {
+        await cartpage.proceedtoCheckout();
+        await checkoutpage.getCheckoutDetails();
+        await checkoutpage.getAddressDetails('delivery');
+        await checkoutpage.getAddressDetails('billing');
+        await use();
+    },
+    validateDeliveryAddress: async ({}, use) => {
+        const addressData = getAddressDataByType('delivery');
+        await use(addressData);
+    },
+    validateBillingAddress: async ({}, use) => {
+        const addressData = getAddressDataByType('billing');
+        await use(addressData);
+    },
+    validateProductDataOnCheckout: async ({ page }, use) => {
+        const checkoutData = await getPageProductDataForAssertion('Checkout');
+        await use(checkoutData);
+    },
+    proceedToPayment: async ({ checkoutpage, paymentpage }, use) => {
+        await checkoutpage.proceedtoPayment();
+        await paymentpage.enterPaymentDetails(cardName, cardNumber, cvc, expirationMM, expirationYYYY);
+        await use();
+    },
+    proceedToCompleteOrder: async ({ paymentpage, orderplacedpage }, use) => {
+        await paymentpage.proceedtoOrder();
+        await use();
+    },
+    verifyHomepageAfterOrder: async ({ orderplacedpage, homepage }, use) => {
+        await orderplacedpage.proceedContinue();
+        await use();
+    }
+});
 
-if (!baseUrl) {
-  throw new Error('Base URL is undefined. Please check your configuration.');
-}
+// test.afterAll(async ({ browser, context }) => {
+//     await cleanupContext(browser, context);
+// });
 
-// This fixture will handle the login action
-export const loginFixture = async ({ page }) => {
-  const homepage = new HomePage(page);
-  const loginpage = new LoginPage(page);
+// test.afterEach(async ({ page }, testInfo) => {
+//     await captureScreenshotOnFailure({ page, testInfo });
+// });
 
-  // Debugging statement to check baseUrl
-  if (!baseUrl) {
-    throw new Error('Base URL is undefined. Please check your configuration.');
-  }
-
-  console.log('Base URL:', baseUrl); // Ensure baseUrl is correct
-
-  // Navigate to the homepage and perform login
-  await page.goto(baseUrl);
-  await homepage.navigateToPage('login');
-  await loginpage.login(username, password);
-
-  // Ensure that login was successful
-  const loggedInMessage = await loginpage.getuserName();
-  const expectedMessage = `Logged in as ${username}`;
-  if (loggedInMessage !== expectedMessage) {
-    throw new Error(`Login failed! Expected: ${expectedMessage}, but got: ${loggedInMessage}`);
-  }
-
-  // Return the homepage object so it can be used in subsequent steps
-  return homepage;
-};
-
-// This fixture will handle adding a product to the cart
-export const addProductToCartFixture = async ({ page }) => {
-  const homepage = new HomePage(page);
-  const cartpage = new CartPage(page);
-
-  // Add products to the cart
-  await homepage.addProductToCart(productNames);
-
-  // Ensure that the cart page is loaded
-  await page.goto('/view_cart');
-  await cartpage.getCartDetails();  // Verify the cart details are correct
-
-  // Return the cart page object for use in further assertions
-  return cartpage;
-};
+module.exports = test;
