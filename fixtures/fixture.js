@@ -72,6 +72,11 @@ const test = base.extend({
         await checkoutpage.getAddressDetails('billing');
         await use();
     },
+    navigateToCartFromCheckout: async ({checkoutpage}, use) => {
+      await checkoutpage.navigateToCartFromCheckout();
+      await use();
+    },
+
     validateDeliveryAddress: async ({}, use) => {
         const addressData = getAddressDataByType('delivery');
         await use(addressData);
@@ -88,6 +93,10 @@ const test = base.extend({
         await checkoutpage.proceedtoPayment();
         await paymentpage.enterPaymentDetails(cardName, cardNumber, cvc, expirationMM, expirationYYYY);
         await use();
+    },
+    navigateToCartFromPayment: async ({paymentpage}, use) => {
+      await paymentpage.navigateToCartFromPayment();
+      await use();
     },
     proceedToCompleteOrder: async ({ paymentpage, orderplacedpage }, use) => {
         await paymentpage.proceedtoOrder();

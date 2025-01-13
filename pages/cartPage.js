@@ -52,6 +52,8 @@ class CartPage {
     }
 
 async proceedtoCheckout(){
+    const cartVisible = await this.pageName;
+    await cartVisible.waitFor({ state: 'visible' });
     await this.proceedtoCheckoutpage.click();
 }
 
