@@ -29,6 +29,12 @@ class PaymentPage {
     async proceedtoOrder(){
         await this.continuePay.click({ force: true });  // Try force-click if necessary
     }
+
+    async navigateToCartFromPayment(){
+        await this.page.goBack();
+        await this.page.goBack();
+  
+      }
 }
 
 module.exports = { PaymentPage };

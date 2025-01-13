@@ -127,6 +127,10 @@ class CheckoutPage {
       return Number(checkoutTotal.replace('Rs. ',''));
     }
     
+    async navigateToCartFromCheckout(){
+      await this.page.goBack();
+
+    }
 
 }
 

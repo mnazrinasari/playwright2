@@ -52,9 +52,22 @@ class CartPage {
     }
 
 async proceedtoCheckout(){
+    const cartVisible = await this.pageName;
+    await cartVisible.waitFor({ state: 'visible' });
     await this.proceedtoCheckoutpage.click();
 }
 
+async deleteProductToCart(){
+        const cartRows = await this.cartRowsLocator;
+        const cartRowsCount = await cartRows.count();
+        // Loop through each row and collect details
+        for (let i = 0; i < cartRowsCount; i++) {
+            const row = cartRows.nth(i).locator('td');
+            await row.locator('[class="cart_quantity_delete"]').click();
+        }
+    }
 }
+
+
 
 module.exports = { CartPage };

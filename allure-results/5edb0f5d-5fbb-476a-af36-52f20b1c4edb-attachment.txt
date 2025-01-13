@@ -1,0 +1,12 @@
+600
+600
+700
+700
+600
+undefined
+700
+undefined
+Performing cleanup...
+Cleared test data files.
+No context found, skipping context close.
+Closing browser...
