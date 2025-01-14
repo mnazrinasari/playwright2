@@ -46,7 +46,6 @@ jobs:
       env:
         TEST_ENV: ${{ secrets.TEST_ENV }}
 
-
     - name: Install Allure Commandline (via npm)
       run: |
         npm install -g allure-commandline --save-dev
@@ -79,15 +78,14 @@ jobs:
         # Pull the latest changes from the remote gh-pages branch with rebase
         git pull --rebase origin gh-pages
 
-        # Copy the Allure report into the 'gh-pages' directory
-        # Ensure that we copy the files into a folder named 'allure-report'
-        mkdir -p allure-report
-        cp -r ../allure-report/* allure-report/
+        # Resolve merge conflicts automatically by favoring our changes (use 'theirs')
+        git checkout --theirs allure-results || true  # Avoid failing if no conflict
+        git add allure-results
 
-        # Add, commit, and push the changes to the gh-pages branch
-        git add .
-        git commit -m "Deploy Allure report"
-        git rebase --continue
+        # Commit the changes
+        git commit -m "Resolve conflicts and deploy Allure report" || true  # Avoid failing if no changes
+
+        # Push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
 
     - name: Send email with Allure report link using Sendinblue API
