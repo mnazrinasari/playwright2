@@ -9,7 +9,7 @@
 // const { createPageContext, captureScreenshotOnFailure, cleanupContext } = require('../utils/context.util');
 // const { getPageProductDataForAssertion, getAddressDataByType } = require('../utils/excel.util');
 
-// // Load configuration
+// Load configuration
 // const config = loadConfig();  
 // const {
 //   baseUrl, username, password, 
