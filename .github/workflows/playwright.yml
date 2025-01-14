@@ -66,10 +66,10 @@ jobs:
         path: allure-report/
         retention-days: 30
 
-    - name: Deploy Allure report to GitHub Pages
+    - name: Deploy Allure report and results to GitHub Pages
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
       run: |
-        # Deploy Allure report to GitHub Pages
+        # Deploy Allure report and results to GitHub Pages
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         
@@ -83,26 +83,28 @@ jobs:
         # Pull the latest changes from the remote gh-pages branch with rebase
         git pull --rebase origin gh-pages
 
-        # Check if allure-report exists before copying
-        echo "Listing files before copying allure-report:"
-        ls -alh ../allure-report
+        # Check if allure-report and allure-results exist before copying
+        echo "Listing files before copying allure-report and allure-results:"
+        ls -alh ../allure-report || echo "allure-report folder doesn't exist."
+        ls -alh ../allure-results || echo "allure-results folder doesn't exist."
 
-        # Copy the newly generated allure-report to the current directory
+        # Copy the newly generated allure-report and allure-results to the current directory
         cp -r ../allure-report ./  # Copy the allure-report to the current directory
+        cp -r ../allure-results ./  # Copy the allure-results to the current directory
 
-        # Debug: List the files again after copying the Allure report
-        echo "Files in gh-pages after copying Allure report:"
+        # Debug: List the files again after copying the Allure report and results
+        echo "Files in gh-pages after copying Allure report and results:"
         ls -alh
 
         # Add and commit the new files to the gh-pages branch
-        git add allure-report
-        git commit -m "Deploy updated Allure report" || echo "No changes to commit"
+        git add allure-report allure-results
+        git commit -m "Deploy updated Allure report and results" || echo "No changes to commit"
 
         # Push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
 
         # Debug: Confirm successful push
-        echo "Pushed Allure report to gh-pages"
+        echo "Pushed Allure report and results to gh-pages"
 
     - name: Send email with Allure report link using Sendinblue API
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
