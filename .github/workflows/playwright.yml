@@ -1,4 +1,4 @@
-name: Playwright Tests with Jest Report and Sendinblue Email
+name: Playwright Tests with Static HTML Report and Sendinblue Email
 
 on:
   push:
@@ -9,6 +9,9 @@ on:
   schedule:
     # Daily trigger at 9 AM UTC
     - cron: '0 9 * * *'  # This triggers the workflow every day at 9 AM UTC
+
+    # Weekly trigger every Monday at 9 AM UTC
+    # - cron: '0 9 * * 1'  # This triggers the workflow every Monday at 9 AM UTC
 
 jobs:
   test:
@@ -28,36 +31,32 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    - name: Debug current directory and files
+    - name: Run Playwright tests
+      run: npx playwright test
+
+    # Create a timestamp for backup
+    - name: Create a unique backup directory with timestamp
       run: |
-        echo "Current directory: $(pwd)"
-        ls -alh
+        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+        BACKUP_DIR="playwright-html-report-backup/$TIMESTAMP"
+        mkdir -p "$BACKUP_DIR"
+        mv playwright-html-report/index.html "$BACKUP_DIR/"
+        echo "Backup directory: $BACKUP_DIR"
+        ls -alh "$BACKUP_DIR"
 
-    - name: Set TEST_ENV from loader.config.js
-      run: |
-        echo "Running from: $(pwd)"  # Debugging: Print current directory
-        node "${{ github.workspace }}/get-test-env.js" >> $GITHUB_ENV
-
-    - name: Run Playwright tests with Jest Reporter
-      run: npx playwright test --reporter=jest-html-reporter
-      env:
-        TEST_ENV: ${{ secrets.TEST_ENV }}
-
-    - name: Debug jest-report folder after generation
-      run: |
-        echo "Listing jest-report folder:"
-        ls -alh jest-report || echo "jest-report folder doesn't exist."
-
-    - uses: actions/upload-artifact@v4
+    # Upload the latest HTML report as artifact (for future reference)
+    - name: Upload the latest HTML report as artifact
+      uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
-        path: jest-report/
+        name: latest-html-report
+        path: playwright-html-report/index.html
         retention-days: 30
 
-    - name: Deploy Jest report to GitHub Pages
+    # Deploy HTML report to GitHub Pages (gh-pages)
+    - name: Deploy HTML report to GitHub Pages
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
       run: |
-        # Deploy Jest report to GitHub Pages
+        # Set up Git configuration for gh-pages deployment
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         
@@ -71,28 +70,29 @@ jobs:
         # Pull the latest changes from the remote gh-pages branch with rebase
         git pull --rebase origin gh-pages
 
-        # Check if jest-report exists before copying
-        echo "Listing files before copying jest-report:"
-        ls -alh ../jest-report || echo "jest-report folder doesn't exist."
+        # Check if allure-report and allure-results exist before copying (if needed)
+        echo "Listing files before copying HTML report:"
+        ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the newly generated jest-report to the current directory
-        cp -r ../jest-report ./  # Copy the jest-report to the current directory
+        # Copy the newly generated HTML report to the current directory
+        cp -r ../playwright-html-report ./  # Copy the HTML report to the current directory
 
-        # Debug: List the files again after copying Jest report
-        echo "Files in gh-pages after copying Jest report:"
+        # Debug: List the files again after copying the HTML report
+        echo "Files in gh-pages after copying HTML report:"
         ls -alh
 
         # Add and commit the new files to the gh-pages branch
-        git add jest-report
-        git commit -m "Deploy updated Jest report" || echo "No changes to commit"
+        git add playwright-html-report
+        git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
 
         # Debug: Confirm successful push
-        echo "Pushed Jest report to gh-pages"
+        echo "Pushed HTML report to gh-pages"
 
-    - name: Send email with Jest report link using Sendinblue API
+    # Send email notification with link to the latest report using Sendinblue API
+    - name: Send email with report link using Sendinblue API
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
       run: |
         # Install curl for API request
@@ -103,8 +103,8 @@ jobs:
         SENDINBLUE_API_KEY="${{ secrets.SENDINBLUE_API_KEY }}"
         SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
         SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
-        EMAIL_SUBJECT="Playwright Tests Completed - Jest Report"
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://your-github-username.github.io/repository-name/jest-report/index.html"
+        EMAIL_SUBJECT="Playwright Tests Completed - HTML Report"
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://mnazrinasari.github.io/playwright2/playwright-html-report/index.html"
 
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \

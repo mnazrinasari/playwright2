@@ -1,5 +1,10 @@
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
+const { loadConfig } = require('./config/loader.config');
+
+const config = loadConfig();
+const environment = config.environment;  // Default to 'test' if not set
+
 
 /**
  * Read environment variables from file.
@@ -23,16 +28,26 @@ module.exports = defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // reporter: 'html',
   reporter: [
-    ['jest-html-reporter', {
-      outputPath: './jest-report/index.html',  // Specify where to save the report
-      pageTitle: 'Playwright Test Report',     // Optional: Set custom title
-      includeFailureMsg: true,                // Optional: Include failure messages
-      includeConsoleLog: true,                // Optional: Include console logs
-    }],
+    ['playwright-html', { 
+      testFolder: 'tests',
+      title: 'Playwright HTML Report',
+      project: 'QA Tests',
+      testEnvironment: environment,
+      embedAssets: true,
+      embedAttachments: true,
+      outputFolder: 'playwright-html-report',
+      minifyAssets: true,
+      startServer: false,
+    }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 
   use: {
+    env: {
+      OS_PLATFORM: process.env.OS_PLATFORM || 'macOS',  // Default if not set
+      OS_RELEASE: process.env.OS_RELEASE || '20.3',     // Default if not set
+      NODE_ENV: environment,  // Pass the environment
+    },
     /* Base URL to use in actions like `await page.goto('/')`. */
     // baseURL: 'http://127.0.0.1:3000',
 
