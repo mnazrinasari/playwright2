@@ -1,8 +1,0 @@
-600
-600
-700
-700
-Performing cleanup...
-Cleared test data files.
-No context found, skipping context close.
-Closing browser...

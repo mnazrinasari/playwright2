@@ -1,2 +1,0 @@
-Test started
-Test completed

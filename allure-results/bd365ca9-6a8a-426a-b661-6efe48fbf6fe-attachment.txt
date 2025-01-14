@@ -1,7 +1,0 @@
-Error creating address details backup: [Error: EBUSY: resource busy or locked, copyfile 'C:\Automation Project\playwright2\test-data\addressdetails.xlsx' -> 'C:\Automation Project\playwright2\test-data\backup\addressdetails_backup_20250114_210133.xlsx'] {
-  errno: -4082,
-  code: 'EBUSY',
-  syscall: 'copyfile',
-  path: 'C:\\Automation Project\\playwright2\\test-data\\addressdetails.xlsx',
-  dest: 'C:\\Automation Project\\playwright2\\test-data\\backup\\addressdetails_backup_20250114_210133.xlsx'
-}
