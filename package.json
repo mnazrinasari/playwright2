@@ -11,6 +11,8 @@
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "allure-playwright": "^3.0.7",
+    "jest": "^29.7.0",
+    "jest-html-reporter": "^3.10.2",
     "playwright": "^1.49.1"
   },
   "dependencies": {
