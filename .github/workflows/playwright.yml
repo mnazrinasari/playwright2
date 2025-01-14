@@ -54,6 +54,11 @@ jobs:
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
       run: allure generate allure-results --clean -o allure-report
 
+    - name: Debug allure-report folder after generation
+      run: |
+        echo "Listing allure-report folder:"
+        ls -alh allure-report || echo "allure-report folder doesn't exist."
+
     - uses: actions/upload-artifact@v4
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
       with:
@@ -78,15 +83,26 @@ jobs:
         # Pull the latest changes from the remote gh-pages branch with rebase
         git pull --rebase origin gh-pages
 
-        # Resolve merge conflicts automatically by favoring our changes (use 'theirs')
-        git checkout --theirs allure-results || true  # Avoid failing if no conflict
-        git add allure-results
+        # Check if allure-report exists before copying
+        echo "Listing files before copying allure-report:"
+        ls -alh ../allure-report
 
-        # Commit the changes
-        git commit -m "Resolve conflicts and deploy Allure report" || true  # Avoid failing if no changes
+        # Copy the newly generated allure-report to the current directory
+        cp -r ../allure-report ./  # Copy the allure-report to the current directory
+
+        # Debug: List the files again after copying the Allure report
+        echo "Files in gh-pages after copying Allure report:"
+        ls -alh
+
+        # Add and commit the new files to the gh-pages branch
+        git add allure-report
+        git commit -m "Deploy updated Allure report" || echo "No changes to commit"
 
         # Push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
+
+        # Debug: Confirm successful push
+        echo "Pushed Allure report to gh-pages"
 
     - name: Send email with Allure report link using Sendinblue API
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
