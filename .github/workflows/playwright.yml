@@ -87,6 +87,7 @@ jobs:
         # Add, commit, and push the changes to the gh-pages branch
         git add .
         git commit -m "Deploy Allure report"
+        git rebase --continue
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
 
     - name: Send email with Allure report link using Sendinblue API
