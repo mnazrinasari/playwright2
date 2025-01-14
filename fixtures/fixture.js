@@ -11,11 +11,11 @@ const { getPageProductDataForAssertion, getAddressDataByType } = require('../uti
 
 const config = loadConfig();
 const {
-  baseUrl, username, password, 
-  cardName, cardNumber, cvc, expirationMM, expirationYYYY, 
-  productNames, productThumbnails, productCategories, productPrices, productQuantities, productTotals, productManualTotals, 
-  name, addressLine1, addressLine2, addressLine3, addressLine4, country, phoneNumber
-} = config;
+    accounts, payments, addresses,
+    productNames, productThumbnails, productCategories, productPrices, productQuantities, productTotals, productManualTotals 
+    } = config;
+
+
 
 const test = base.extend({
     homepage: async ({ page }, use) => {
@@ -42,11 +42,13 @@ const test = base.extend({
         const orderplacedpage = new OrderPlacedPage(page);
         await use(orderplacedpage);
     },
-    loginWithValidCredentials: async ({ page, homepage, loginpage }, use) => {
-        await page.goto(baseUrl);
-        await homepage.navigateToPage('login');
-        await homepage.loginExistingUser(username, password);
-        await use();
+    loginWithValidCredentials: async ({ page, homepage }, use, testInfo) => {
+      const account = accounts[testInfo.workerIndex % accounts.length];  // Assign account based on worker index
+      testInfo.account = account;  // Store the account information in testInfo
+      await page.goto(account.baseUrl);
+      await homepage.navigateToPage('login');
+      await homepage.loginExistingUser(account.login, account.password);
+      await use();
     },
     addProductToCart: async ({ homepage, cartpage }, use) => {
         await homepage.addProductToCart(productNames);
@@ -57,12 +59,12 @@ const test = base.extend({
         await cartpage.deleteProductToCart();
         await use();
     },
-    validateProductDataOnHomepage: async ({ page }, use) => {
-        const homepageData = await getPageProductDataForAssertion('Homepage');
+    validateProductDataOnHomepage: async ({ homepage }, use) => {
+        const homepageData = await homepage.addProductToCart();
         await use(homepageData);
     },
-    validateProductDataOnCart: async ({ page }, use) => {
-        const cartData = await getPageProductDataForAssertion('Shopping Cart');
+    validateProductDataOnCart: async ({ cartpage }, use) => {
+        const cartData = await cartpage.getCartDetails();
         await use(cartData);
     },
     proceedToCheckout: async ({ cartpage, checkoutpage }, use) => {
@@ -76,33 +78,34 @@ const test = base.extend({
       await checkoutpage.navigateToCartFromCheckout();
       await use();
     },
-
-    validateDeliveryAddress: async ({}, use) => {
-        const addressData = getAddressDataByType('delivery');
+    validateDeliveryAddress: async ({checkoutpage}, use) => {
+        const addressData = await checkoutpage.getAddressDetails('delivery');
         await use(addressData);
     },
-    validateBillingAddress: async ({}, use) => {
-        const addressData = getAddressDataByType('billing');
+    validateBillingAddress: async ({checkoutpage}, use) => {
+        const addressData = await checkoutpage.getAddressDetails('billing');
         await use(addressData);
     },
-    validateProductDataOnCheckout: async ({ page }, use) => {
-        const checkoutData = await getPageProductDataForAssertion('Checkout');
+    validateProductDataOnCheckout: async ({ checkoutpage }, use) => {
+        const checkoutData = await checkoutpage.getCheckoutDetails();
         await use(checkoutData);
     },
-    proceedToPayment: async ({ checkoutpage, paymentpage }, use) => {
+    proceedToPayment: async ({ checkoutpage, paymentpage }, use, testInfo) => {
         await checkoutpage.proceedtoPayment();
-        await paymentpage.enterPaymentDetails(cardName, cardNumber, cvc, expirationMM, expirationYYYY);
+        const payment = payments[testInfo.workerIndex % payments.length];  // Assign account based on worker index
+        testInfo.payment = payment; 
+        await paymentpage.enterPaymentDetails(payment.cardName, payment.cardNumber, payment.cvc, payment.expirationMM, payment.expirationYYYY);
         await use();
     },
     navigateToCartFromPayment: async ({paymentpage}, use) => {
       await paymentpage.navigateToCartFromPayment();
       await use();
     },
-    proceedToCompleteOrder: async ({ paymentpage, orderplacedpage }, use) => {
+    proceedToCompleteOrder: async ({ paymentpage }, use) => {
         await paymentpage.proceedtoOrder();
         await use();
     },
-    verifyHomepageAfterOrder: async ({ orderplacedpage, homepage }, use) => {
+    verifyHomepageAfterOrder: async ({ orderplacedpage }, use) => {
         await orderplacedpage.proceedContinue();
         await use();
     }

@@ -1,5 +1,3 @@
-const { writeProductDataToExcel } = require('../utils/excel.util');  // Importing the write function from util.js
-
 class LoginPage {
     constructor(page) {
         this.page = page;

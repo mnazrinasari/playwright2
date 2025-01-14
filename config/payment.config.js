@@ -6,13 +6,24 @@ function loadPaymentConfig(environment) {
   const paymentInfo = readAccountConfig(environment);
 
   // Return the account-related data
-  return {
-    cardName: paymentInfo.cardName,
-    cardNumber: paymentInfo.cardNumber,
-    cvc: paymentInfo.cvc,
-    expirationMM: paymentInfo.expirationMM,
-    expirationYYYY: paymentInfo.expirationYYYY,
-  };
+//   return {
+//     cardName: paymentInfo.cardName,
+//     cardNumber: paymentInfo.cardNumber,
+//     cvc: paymentInfo.cvc,
+//     expirationMM: paymentInfo.expirationMM,
+//     expirationYYYY: paymentInfo.expirationYYYY,
+//   };
+// }
+
+return paymentInfo.map(info => ({
+  cardName: info.cardName,
+  cardNumber: info.cardNumber,
+  cvc: info.cvc,
+  expirationMM: info.expirationMM,
+  expirationYYYY: info.expirationYYYY,
+  country: info.country,
+  phoneNumber: String(info.phoneNumber)
+}));
 }
 
 module.exports = { loadPaymentConfig };

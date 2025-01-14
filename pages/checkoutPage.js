@@ -1,5 +1,3 @@
-const { writeProductDataToExcel, writeAddressDataToExcel } = require('../utils/excel.util');  // Importing the write function from util.js
-
 class CheckoutPage {
     constructor(page) {
         this.page = page;
@@ -21,40 +19,42 @@ class CheckoutPage {
 
     // Get cart details and save them to an Excel file
     async getCheckoutDetails() {
-        // Fetch the rows of the cart
-    const checkoutRows = await this.checkoutRowsLocator;
-    const checkoutRowsCount = await checkoutRows.count();
-    const checkoutPageName = await this.pageName.textContent();
-    let checkoutDetails = [];
-        // Loop through each row and collect details
-        for(let i=0; i<checkoutRowsCount; i++){
-            const row = checkoutRows.nth(i);
-
-            // Extract details for each product in the cart
+      // Fetch the rows of the cart
+      const checkoutRows = await this.checkoutRowsLocator;
+      const checkoutRowsCount = await checkoutRows.count();
+      const checkoutPageName = await this.pageName.textContent();
+      let checkoutDetails = [];
+    
+      // Loop through each row and collect details
+      for (let i = 0; i < checkoutRowsCount; i++) {
+        const row = checkoutRows.nth(i);
+    
+        // Extract details for each product in the cart
         let checkoutProductThumbnail = await row.locator('td a img').getAttribute('src');
         let checkoutProductName = await row.locator('td h4 a').textContent();
         let checkoutProductCategory = await row.locator('td p').nth(0).textContent();
         let checkoutProductPrice = (await row.locator('td p').nth(1).textContent()).replace('Rs. ', '');
         let checkoutProductQuantity = await row.locator('td button').textContent();
-        let checkoutProductTotal= (await row.locator('td p').nth(2).textContent()).replace('Rs. ', '');
+        let checkoutProductTotal = (await row.locator('td p').nth(2).textContent()).replace('Rs. ', '');
         let checkoutProductManualTotal = String(checkoutProductPrice * checkoutProductQuantity);
-            // Push product details into the cartDetails array (as an object)
+    
+        // Push product details into the checkoutDetails array (as an object)
         checkoutDetails.push({
-            Page: checkoutPageName, 
-            Thumbnail: checkoutProductThumbnail,
-            Name: checkoutProductName,
-            Category: checkoutProductCategory,
-            Price: checkoutProductPrice,
-            Quantity: checkoutProductQuantity,
-            Total: checkoutProductTotal,
-            ManualTotal: checkoutProductManualTotal
-            });
-        }
-
-        // Call the utility function to save cart details into the Excel file
-        writeProductDataToExcel(checkoutDetails);
+          Page: checkoutPageName, 
+          Thumbnail: checkoutProductThumbnail,
+          Name: checkoutProductName,
+          Category: checkoutProductCategory,
+          Price: checkoutProductPrice,
+          Quantity: Number(checkoutProductQuantity),
+          Total: Number(checkoutProductTotal),
+          ManualTotal: Number(checkoutProductManualTotal)
+        });
+      }
+    
+      // Return the checkout details object
+      return checkoutDetails;
     }
-
+    
 
     async proceedtoPayment(){
         await this.proceedtoPaymentPage.click();
@@ -117,9 +117,13 @@ class CheckoutPage {
       // Clean the address data: Remove unwanted labels (addressLabel) and gender prefix (e.g., "Mr.")
       retrievedAddress = this.cleanAddressData(retrievedAddress, addressLabel, genderPrefix);
     
-      // Call the Excel writing function
-      await writeAddressDataToExcel(type, retrievedAddress);
-      return retrievedAddress;
+      // Store the address details in an object
+      const addressObject = {
+        type: type,
+        details: retrievedAddress
+      };
+    
+      return addressObject;
     }
     
     async getCheckoutTotal(){
