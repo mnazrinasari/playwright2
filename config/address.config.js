@@ -6,15 +6,15 @@ function loadAddressConfig(environment) {
   const addressInfo = readAccountConfig(environment);
 
   // Return the account-related data
-  return {
-    name: addressInfo.name,
-    addressLine1: addressInfo.addressLine1,
-    addressLine2: addressInfo.addressLine2,
-    addressLine3: addressInfo.addressLine3,
-    addressLine4: addressInfo.addressLine4,
-    country: addressInfo.country,
-    phoneNumber: addressInfo.phoneNumber
-  };
+  return addressInfo.map(info => ({
+    name: info.name,
+    addressLine1: info.addressLine1,
+    addressLine2: info.addressLine2,
+    addressLine3: info.addressLine3,
+    addressLine4: info.addressLine4,
+    country: info.country,
+    phoneNumber: String(info.phoneNumber)
+  }));
 }
 
 module.exports = { loadAddressConfig };

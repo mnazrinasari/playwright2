@@ -1,0 +1,7 @@
+Error creating backup: [Error: EBUSY: resource busy or locked, copyfile 'C:\Automation Project\playwright2\test-data\productdetails.xlsx' -> 'C:\Automation Project\playwright2\test-data\backup\productdetails_backup_20250114_200205.xlsx'] {
+  errno: -4082,
+  code: 'EBUSY',
+  syscall: 'copyfile',
+  path: 'C:\\Automation Project\\playwright2\\test-data\\productdetails.xlsx',
+  dest: 'C:\\Automation Project\\playwright2\\test-data\\backup\\productdetails_backup_20250114_200205.xlsx'
+}

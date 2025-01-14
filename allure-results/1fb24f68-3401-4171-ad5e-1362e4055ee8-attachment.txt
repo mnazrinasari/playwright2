@@ -1,0 +1,20 @@
+Error clearing test data files: TypeError: (0 , _excel.clearProductDetailsFile) is not a function
+    at cleanupContext (C:\Automation Project\playwright2\utils\context.util.js:20:34)
+    at C:\Automation Project\playwright2\tests\complete_order.spec.js:33:11
+    at C:\Automation Project\playwright2\node_modules\playwright\lib\worker\fixtureRunner.js:250:13
+    at C:\Automation Project\playwright2\node_modules\playwright\lib\worker\testInfo.js:286:17
+    at TimeoutManager.withRunnable (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\timeoutManager.js:64:34)
+    at TestInfoImpl._runAsStage (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\testInfo.js:284:34)
+    at FixtureRunner.resolveParametersAndRunFunction (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\fixtureRunner.js:246:20)
+    at C:\Automation Project\playwright2\node_modules\playwright\lib\worker\workerMain.js:589:11
+    at C:\Automation Project\playwright2\node_modules\playwright\lib\worker\testInfo.js:286:11
+    at TimeoutManager.withRunnable (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\timeoutManager.js:52:27)
+    at TestInfoImpl._runAsStage (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\testInfo.js:284:7)
+    at WorkerMain._runEachHooksForSuites (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\workerMain.js:582:9)
+    at C:\Automation Project\playwright2\node_modules\playwright\lib\worker\workerMain.js:380:38
+    at C:\Automation Project\playwright2\node_modules\playwright\lib\worker\testInfo.js:286:11
+    at TimeoutManager.withRunnable (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\timeoutManager.js:52:27)
+    at TestInfoImpl._runAsStage (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\testInfo.js:284:7)
+    at WorkerMain._runTest (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\workerMain.js:355:5)
+    at WorkerMain.runTestGroup (C:\Automation Project\playwright2\node_modules\playwright\lib\worker\workerMain.js:205:11)
+    at process.<anonymous> (C:\Automation Project\playwright2\node_modules\playwright\lib\common\process.js:95:22)

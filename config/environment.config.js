@@ -5,13 +5,20 @@ function loadEnvironmentConfig(environment) {
   // Get account information based on the environment (filtered from the Excel file)
   const environmentInfo = readAccountConfig(environment);
 
+  // Ensure environmentInfo is an array
+  if (!Array.isArray(environmentInfo)) {
+    throw new Error('Expected environmentInfo to be an array');
+  }
+
   // Return the account-related data
-  return {
-    environment: environmentInfo.environment,
-    baseUrl: environmentInfo.baseUrl,
-    username: environmentInfo.username,
-    password: environmentInfo.password,
-  };
+  return environmentInfo.map(info => ({
+    environment: info.environment,
+    baseUrl: info.baseUrl,
+    login: info.login,
+    username: info.username,
+    password: info.password,
+  }));
 }
 
 module.exports = { loadEnvironmentConfig };
+

@@ -11,7 +11,6 @@ let environment = process.env.TEST_ENV;
 environment = 'test'; //SET YOUR ENVIRONMENT HERE
 //////////////////////////////////////////////////
 
-
 // Main function to load configuration based on the environment
 function loadConfig() {
   // Load environment, payment, and account-related config
@@ -35,23 +34,12 @@ function loadConfig() {
   return {
     //environment & login details
     environment,
-    baseUrl: environmentConfig.baseUrl,
-    username: environmentConfig.username,
-    password: environmentConfig.password,
+    baseUrl: environmentConfig[0].baseUrl,  // Use the baseUrl from the first account
+    accounts: environmentConfig,  // Return all accounts
     //payment details
-    cardName: paymentConfig.cardName,
-    cardNumber: paymentConfig.cardNumber,
-    cvc: paymentConfig.cvc,
-    expirationMM: paymentConfig.expirationMM,
-    expirationYYYY: paymentConfig.expirationYYYY,
+    payments: paymentConfig,
     //address details
-    name: addressConfig.name,
-    addressLine1: addressConfig.addressLine1,
-    addressLine2: addressConfig.addressLine2,
-    addressLine3: addressConfig.addressLine3,
-    addressLine4: addressConfig.addressLine4,
-    country: addressConfig.country,
-    phoneNumber: addressConfig.phoneNumber,
+    addresses: addressConfig, // Return all address
     // Product details
     products,                // Full product data
     productNames,            // Product names

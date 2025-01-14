@@ -1,5 +1,3 @@
-const { writeProductDataToExcel } = require('../utils/excel.util');  // Importing the write function from util.js
-
 class CartPage {
     constructor(page) {
         this.page = page;
@@ -21,36 +19,37 @@ class CartPage {
         const cartRowsCount = await cartRows.count();
         let cartDetails = [];
         const cartPageName = await this.pageName.textContent();
+      
         // Loop through each row and collect details
         for (let i = 0; i < cartRowsCount; i++) {
-            const row = cartRows.nth(i);
-
-            // Extract details for each product in the cart
-            const cartProductThumbnail = await row.locator('td a img').getAttribute('src');
-            const cartProductName = await row.locator('td h4 a').textContent();
-            const cartProductCategory = await row.locator('td p').nth(0).textContent();
-            const cartProductPrice = (await row.locator('td p').nth(1).textContent()).replace('Rs. ', '');
-            const cartProductQuantity = await row.locator('td button').textContent();
-            const cartProductTotal = (await row.locator('td p').nth(2).textContent()).replace('Rs. ', '');
-            const cartProductManualTotal = String(cartProductPrice * cartProductQuantity); // Price * Quantity
-            
-            // Push product details into the cartDetails array (as an object)
-            cartDetails.push({
-                Page: cartPageName, 
-                Thumbnail: cartProductThumbnail,
-                Name: cartProductName,
-                Category: cartProductCategory,
-                Price: cartProductPrice,
-                Quantity: cartProductQuantity,
-                Total: cartProductTotal,
-                ManualTotal: cartProductManualTotal
-            });
+          const row = cartRows.nth(i);
+      
+          // Extract details for each product in the cart
+          const cartProductThumbnail = await row.locator('td a img').getAttribute('src');
+          const cartProductName = await row.locator('td h4 a').textContent();
+          const cartProductCategory = await row.locator('td p').nth(0).textContent();
+          const cartProductPrice = (await row.locator('td p').nth(1).textContent()).replace('Rs. ', '');
+          const cartProductQuantity = await row.locator('td button').textContent();
+          const cartProductTotal = (await row.locator('td p').nth(2).textContent()).replace('Rs. ', '');
+          const cartProductManualTotal = String(cartProductPrice * cartProductQuantity); // Price * Quantity
+      
+          // Push product details into the cartDetails array (as an object)
+          cartDetails.push({
+            Page: cartPageName, 
+            Thumbnail: cartProductThumbnail,
+            Name: cartProductName,
+            Category: cartProductCategory,
+            Price: cartProductPrice,
+            Quantity: Number(cartProductQuantity),
+            Total: Number(cartProductTotal),
+            ManualTotal: Number(cartProductManualTotal)
+          });
         }
-
-        // Call the utility function to save cart details into the Excel file
-        writeProductDataToExcel(cartDetails);
-    }
-
+      
+        // Return the cart details object
+        return cartDetails;
+      }
+      
 async proceedtoCheckout(){
     const cartVisible = await this.pageName;
     await cartVisible.waitFor({ state: 'visible' });

@@ -1,5 +1,3 @@
-const { writeProductDataToExcel } = require('../utils/excel.util');  // Importing the write function from util.js
-
 class HomePage {
     constructor(page) {
         this.page = page;
@@ -64,63 +62,62 @@ class HomePage {
 
     // Add product to the cart based on the provided data
     async addProductToCart(randomProductData) {
-        let homeProductData = [];  // Array to store product details for Excel
+        let homeProductData = [];  // Array to store product details
         let productAddedtoCart = [];
         const productCard = await this.productCards;
         const allProductsCounts = await productCard.count();
-
+      
         // Selecting product and view the PDP
         for (let i = 0; i < allProductsCounts; i++) {
-            const singleProduct = await productCard.nth(i).locator('div p').nth(0).textContent();
-            for (const product of randomProductData) {
-                if (!productAddedtoCart.includes(product) && singleProduct === product) {
-                    productAddedtoCart.push(product);
-                    const homeProductName = singleProduct;
-                    const homeProductThumbnail = await productCard.nth(i).locator('div img').getAttribute('src');
-                    const homeProductPrice = (await productCard.nth(i).locator('div h2').first().textContent()).replace('Rs. ','');
-
-                    // Set the quantity and calculate total
-                    const quantity = 1;
-                    const total = homeProductPrice * quantity;
-                    const manualTotal = total; // Set Manual Total same as Total
-
-                    // Prepare product data object
-                    homeProductData.push({
-                        Page: 'Homepage',
-                        Thumbnail: homeProductThumbnail,
-                        Name: homeProductName,
-                        Category: '',  // Empty category for now
-                        Price: homeProductPrice,
-                        Quantity: quantity,
-                        Total: total,
-                        ManualTotal: manualTotal
-                    });
-
-                    // Click the product to view product detail page
-                    await productCard.nth(i).locator('div a').nth(0).click();
-                    if (productAddedtoCart.length < randomProductData.length) {
-                        const modal = this.continueModal;
-                        await modal.waitFor({ state: 'visible' });
-                        await modal.click();
-                        // console.log("clicked");
-                    } else {
-                        const modal = this.viewCartModal;
-                        await modal.waitFor({ state: 'visible' });
-                        await modal.click();
-                        // console.log("last product clicked");
-                    }
-                    break;
-                }
+          const singleProduct = await productCard.nth(i).locator('div p').nth(0).textContent();
+          for (const product of randomProductData) {
+            if (!productAddedtoCart.includes(product) && singleProduct === product) {
+              productAddedtoCart.push(product);
+              const homeProductName = singleProduct;
+              const homeProductThumbnail = await productCard.nth(i).locator('div img').getAttribute('src');
+              const homeProductPrice = (await productCard.nth(i).locator('div h2').first().textContent()).replace('Rs. ', '');
+      
+              // Set the quantity and calculate total
+              const quantity = 1;
+              const total = homeProductPrice * quantity;
+              const manualTotal = total; // Set Manual Total same as Total
+      
+              // Prepare product data object
+              homeProductData.push({
+                Page: 'Homepage',
+                Thumbnail: homeProductThumbnail,
+                Name: homeProductName,
+                Category: '',  // Empty category for now
+                Price: homeProductPrice,
+                Quantity: quantity,
+                Total: total,
+                ManualTotal: manualTotal
+              });
+      
+              // Click the product to view product detail page
+              await productCard.nth(i).locator('div a').nth(0).click();
+              if (productAddedtoCart.length < randomProductData.length) {
+                const modal = this.continueModal;
+                await modal.waitFor({ state: 'visible' });
+                await modal.click();
+              } else {
+                const modal = this.viewCartModal;
+                await modal.waitFor({ state: 'visible' });
+                await modal.click();
+              }
+              break;
             }
-
-            if (productAddedtoCart.length === randomProductData.length) {
-                break;
-            }
+          }
+      
+          if (productAddedtoCart.length === randomProductData.length) {
+            break;
+          }
         }
-
-        // After adding products to the cart, write the collected product data to Excel
-        writeProductDataToExcel(homeProductData);  // Call write function from util.js
-    }
+      
+        // Return the product details object
+        return homeProductData;
+      }
+      
 }
 
 module.exports = { HomePage };
