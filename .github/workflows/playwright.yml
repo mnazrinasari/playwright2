@@ -70,8 +70,8 @@ jobs:
         # Fetch the latest changes from the remote repository
         git fetch origin
 
-        # Check if the gh-pages branch exists on the remote and handle it accordingly
-        if ! git show-ref --verify --quiet refs/heads/gh-pages; then
+        # Check if the gh-pages branch exists remotely
+        if ! git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
           echo "gh-pages branch does not exist on remote. Creating it from main..."
           # Create gh-pages branch locally from main
           git checkout -b gh-pages origin/main
@@ -79,10 +79,18 @@ jobs:
           git push -u origin gh-pages
         else
           echo "gh-pages branch exists on remote. Syncing with remote..."
-          # Check out the existing gh-pages branch
+
+          # Check out the existing gh-pages branch from remote
           git checkout gh-pages
-          # Fetch the latest changes from the remote gh-pages
-          git pull --rebase origin gh-pages
+          
+          # Rebase the gh-pages branch onto main
+          git rebase origin/main
+
+          # If there are conflicts during rebase, handle them here
+          if [ $? -ne 0 ]; then
+            echo "There are conflicts during rebase. Please resolve them manually."
+            exit 1
+          fi
         fi
 
         # Check if playwright-html-report exists before copying (if needed)
