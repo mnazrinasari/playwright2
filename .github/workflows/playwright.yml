@@ -2,13 +2,13 @@ name: Playwright Tests with Static HTML Report and Sendinblue Email
 
 on:
   push:
-    branches: [main, master]  # Trigger on push to main or master
+    branches: [main, master]
   pull_request:
-    branches: [main, master]  # Trigger on PR to main or master
-  workflow_dispatch:  # Manual trigger
+    branches: [main, master]
+  workflow_dispatch:
   schedule:
     # Daily trigger at 9 AM UTC
-    - cron: '0 9 * * *'
+    - cron: '0 9 * * *'  # This triggers the workflow every day at 9 AM UTC
 
 jobs:
   test:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4  # Checkout the code
+    - uses: actions/checkout@v4
 
     - uses: actions/setup-node@v4
       with:
@@ -31,21 +31,14 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
-    # Create a unique backup of index.html with timestamp
-    - name: Create a unique backup of index.html with timestamp
+    # Create a timestamped backup of index.html with a unique name
+    - name: Create a unique backup directory with timestamp
       run: |
-        # Generate a timestamp in the format 'YYYY-MM-DD_HH-MM-SS'
         TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-
-        # Create a backup of index.html with the timestamp in its name
-        BACKUP_FILE="playwright-html-report/index_${TIMESTAMP}.html"
-        
-        # Rename (backup) the index.html file with the timestamp
-        cp playwright-html-report/index.html "$BACKUP_FILE"
-
-        # Output the backup filename
-        echo "Backup created: $BACKUP_FILE"
-        ls -alh playwright-html-report
+        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
+        mv playwright-html-report/index.html "$BACKUP_FILE"
+        echo "Backup created with name: $BACKUP_FILE"
+        ls -alh "$BACKUP_FILE"
 
     # Upload the latest HTML report as artifact (for future reference)
     - name: Upload the latest HTML report as artifact
@@ -55,7 +48,7 @@ jobs:
         path: playwright-html-report/index.html
         retention-days: 30
 
-    # Deploy HTML report to GitHub Pages
+    # Deploy HTML report to GitHub Pages (gh-pages)
     - name: Deploy HTML report to GitHub Pages
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
       run: |
@@ -108,9 +101,8 @@ jobs:
         git add playwright-html-report
         git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
-        # Push the changes to the gh-pages branch using GITHUB_TOKEN for authentication
-        # Use --force-with-lease to avoid overwriting other's changes
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force-with-lease
+        # Force-push the changes to the gh-pages branch
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force
 
         # Debug: Confirm successful push
         echo "Pushed HTML report to gh-pages"
@@ -128,7 +120,7 @@ jobs:
         SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
         SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
         EMAIL_SUBJECT="Playwright Tests Completed - HTML Report"
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://<your-username>.github.io/<repository-name>/playwright-html-report/index.html"
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://mnazrinasari.github.io/playwright2/playwright-html-report/index.html"
 
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
