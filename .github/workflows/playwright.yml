@@ -67,16 +67,19 @@ jobs:
         git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git github-pages
         cd github-pages
 
-        # Check if the gh-pages branch exists, if not, create it
-        git fetch
+        # Fetch the latest changes from the remote repository
+        git fetch origin
+
+        # Check if the gh-pages branch exists, if not, create it from main
         if ! git show-ref --verify --quiet refs/heads/gh-pages; then
           echo "gh-pages branch does not exist. Creating it from main..."
-          git checkout -b gh-pages origin/main  # or origin/master if that's your default branch
+          git checkout -b gh-pages origin/main  # Create gh-pages from main
           git push -u origin gh-pages  # Push the new gh-pages branch
         else
           # Switch to gh-pages branch if it exists
           git checkout gh-pages
-          # Pull the latest changes from the remote gh-pages branch (use rebase to avoid unnecessary merge commits)
+
+          # Rebase the gh-pages branch with the latest changes from the remote
           git pull --rebase origin gh-pages
         fi
 
@@ -96,7 +99,7 @@ jobs:
         git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Push the changes to the gh-pages branch using GITHUB_TOKEN for authentication
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force  # Force push to resolve conflicts
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force-with-lease  # Force push with safer option
 
         # Debug: Confirm successful push
         echo "Pushed HTML report to gh-pages"
