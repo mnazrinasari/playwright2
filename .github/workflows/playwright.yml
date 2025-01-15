@@ -70,16 +70,18 @@ jobs:
         # Fetch the latest changes from the remote repository
         git fetch origin
 
-        # Check if the gh-pages branch exists, if not, create it from main
+        # Check if the gh-pages branch exists on the remote and handle it accordingly
         if ! git show-ref --verify --quiet refs/heads/gh-pages; then
-          echo "gh-pages branch does not exist. Creating it from main..."
-          git checkout -b gh-pages origin/main  # Create gh-pages from main
-          git push -u origin gh-pages  # Push the new gh-pages branch
+          echo "gh-pages branch does not exist on remote. Creating it from main..."
+          # Create gh-pages branch locally from main
+          git checkout -b gh-pages origin/main
+          # Push the new gh-pages branch to the remote
+          git push -u origin gh-pages
         else
-          # Switch to gh-pages branch if it exists
+          echo "gh-pages branch exists on remote. Syncing with remote..."
+          # Check out the existing gh-pages branch
           git checkout gh-pages
-
-          # Rebase the gh-pages branch with the latest changes from the remote
+          # Fetch the latest changes from the remote gh-pages
           git pull --rebase origin gh-pages
         fi
 
@@ -87,7 +89,7 @@ jobs:
         echo "Listing files before copying HTML report:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the newly generated HTML report to the root of the gh-pages branch (if desired)
+        # Copy the newly generated HTML report to the root of the gh-pages branch
         cp -r ../playwright-html-report ./  # Copy the HTML report to the current directory
 
         # Debug: List the files again after copying the HTML report
@@ -99,7 +101,8 @@ jobs:
         git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Push the changes to the gh-pages branch using GITHUB_TOKEN for authentication
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force-with-lease  # Force push with safer option
+        # Use --force-with-lease to avoid overwriting other's changes
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force-with-lease
 
         # Debug: Confirm successful push
         echo "Pushed HTML report to gh-pages"
