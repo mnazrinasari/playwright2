@@ -2,16 +2,13 @@ name: Playwright Tests with Static HTML Report and Sendinblue Email
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master]  # Trigger on push to main or master
   pull_request:
-    branches: [main, master]
-  workflow_dispatch:
+    branches: [main, master]  # Trigger on PR to main or master
+  workflow_dispatch:  # Manual trigger
   schedule:
     # Daily trigger at 9 AM UTC
-    - cron: '0 9 * * *'  # This triggers the workflow every day at 9 AM UTC
-
-    # Weekly trigger every Monday at 9 AM UTC
-    # - cron: '0 9 * * 1'  # This triggers the workflow every Monday at 9 AM UTC
+    - cron: '0 9 * * *'
 
 jobs:
   test:
@@ -19,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4  # Checkout the code
 
     - uses: actions/setup-node@v4
       with:
@@ -79,7 +76,7 @@ jobs:
         else
           # Switch to gh-pages branch if it exists
           git checkout gh-pages
-          # Pull the latest changes from the remote gh-pages branch
+          # Pull the latest changes from the remote gh-pages branch (use rebase to avoid unnecessary merge commits)
           git pull --rebase origin gh-pages
         fi
 
@@ -87,7 +84,7 @@ jobs:
         echo "Listing files before copying HTML report:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the newly generated HTML report to the current directory
+        # Copy the newly generated HTML report to the root of the gh-pages branch (if desired)
         cp -r ../playwright-html-report ./  # Copy the HTML report to the current directory
 
         # Debug: List the files again after copying the HTML report
@@ -99,7 +96,7 @@ jobs:
         git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Push the changes to the gh-pages branch using GITHUB_TOKEN for authentication
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force  # Force push to resolve conflicts
 
         # Debug: Confirm successful push
         echo "Pushed HTML report to gh-pages"
@@ -117,7 +114,7 @@ jobs:
         SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
         SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
         EMAIL_SUBJECT="Playwright Tests Completed - HTML Report"
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://mnazrinasari.github.io/playwright2/playwright-html-report/index.html"
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: https://<your-username>.github.io/<repository-name>/playwright-html-report/index.html"
 
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
