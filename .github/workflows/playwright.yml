@@ -52,25 +52,32 @@ jobs:
         path: playwright-html-report/index.html
         retention-days: 30
 
-    # Deploy HTML report to GitHub Pages (gh-pages)
+    # Deploy HTML report to GitHub Pages
     - name: Deploy HTML report to GitHub Pages
       if: ${{ always() }}  # Ensure this step runs even if previous steps fail
       run: |
         # Set up Git configuration for gh-pages deployment
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        
-        # Clone the repository and switch to gh-pages branch
+
+        # Clone the repository
         git clone https://github.com/${{ github.repository }}.git github-pages
         cd github-pages
 
-        # Create gh-pages branch if it doesn't exist or switch to it
-        git checkout -b gh-pages || git checkout gh-pages
+        # Check if the gh-pages branch exists, if not, create it
+        git fetch
+        if ! git show-ref --verify --quiet refs/heads/gh-pages; then
+          echo "gh-pages branch does not exist. Creating it from main..."
+          git checkout -b gh-pages origin/main  # or origin/master if that's your default branch
+          git push -u origin gh-pages  # Push the new gh-pages branch
+        else
+          # Switch to gh-pages branch if it exists
+          git checkout gh-pages
+          # Pull the latest changes from the remote gh-pages branch
+          git pull --rebase origin gh-pages
+        fi
 
-        # Pull the latest changes from the remote gh-pages branch with rebase
-        git pull --rebase origin gh-pages
-
-        # Check if allure-report and allure-results exist before copying (if needed)
+        # Check if playwright-html-report exists before copying (if needed)
         echo "Listing files before copying HTML report:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
