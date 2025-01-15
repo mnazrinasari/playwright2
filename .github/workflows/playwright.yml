@@ -34,15 +34,21 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
-    # Create a timestamp for backup
-    - name: Create a unique backup directory with timestamp
+    # Create a unique backup of index.html with timestamp
+    - name: Create a unique backup of index.html with timestamp
       run: |
+        # Generate a timestamp in the format 'YYYY-MM-DD_HH-MM-SS'
         TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-        BACKUP_DIR="playwright-html-report-backup/$TIMESTAMP"
-        mkdir -p "$BACKUP_DIR"
-        mv playwright-html-report/index.html "$BACKUP_DIR/"
-        echo "Backup directory: $BACKUP_DIR"
-        ls -alh "$BACKUP_DIR"
+
+        # Create a backup of index.html with the timestamp in its name
+        BACKUP_FILE="playwright-html-report/index_${TIMESTAMP}.html"
+        
+        # Rename (backup) the index.html file with the timestamp
+        cp playwright-html-report/index.html "$BACKUP_FILE"
+
+        # Output the backup filename
+        echo "Backup created: $BACKUP_FILE"
+        ls -alh playwright-html-report
 
     # Upload the latest HTML report as artifact (for future reference)
     - name: Upload the latest HTML report as artifact
@@ -60,8 +66,8 @@ jobs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
 
-        # Clone the repository
-        git clone https://github.com/${{ github.repository }}.git github-pages
+        # Clone the repository using GITHUB_TOKEN for authentication
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git github-pages
         cd github-pages
 
         # Check if the gh-pages branch exists, if not, create it
@@ -92,7 +98,7 @@ jobs:
         git add playwright-html-report
         git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
-        # Push the changes to the gh-pages branch
+        # Push the changes to the gh-pages branch using GITHUB_TOKEN for authentication
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
 
         # Debug: Confirm successful push
