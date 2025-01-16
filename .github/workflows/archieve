@@ -91,36 +91,22 @@ jobs:
         echo "Listing files before copying HTML report:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the latest index.html to the root of the gh-pages branch
-        if [ -f "../playwright-html-report/index.html" ]; then
-          cp -r ../playwright-html-report/index.html ./index.html  # Copy the latest HTML report to the root
-          echo "Copied latest index.html to gh-pages."
-        else
-          echo "Error: index.html not found. Skipping copy to gh-pages."
-          exit 1
-        fi
+        # Copy the newly generated HTML report to the root of the gh-pages branch
+        cp -r ../playwright-html-report ./  # Copy the HTML report to the current directory
 
-        # Copy the backup file (timestamped file) to gh-pages
-        if [ -f "../playwright-html-report/index_$TIMESTAMP.html" ]; then
-          cp -r "../playwright-html-report/index_$TIMESTAMP.html" ./index_backup_$TIMESTAMP.html
-          echo "Backup report copied to gh-pages."
-        else
-          echo "Error: Backup file not found. Skipping backup copy to gh-pages."
-        fi
-
-        # Debug: List the files again after copying the HTML report and backup
-        echo "Files in gh-pages after copying HTML report and backup:"
+        # Debug: List the files again after copying the HTML report
+        echo "Files in gh-pages after copying HTML report:"
         ls -alh
 
         # Add and commit the new files to the gh-pages branch
-        git add index.html index_backup_$TIMESTAMP.html
-        git commit -m "Deploy updated HTML report and backup" || echo "No changes to commit"
+        git add playwright-html-report
+        git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Force-push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force
 
         # Debug: Confirm successful push
-        echo "Pushed HTML report and backup to gh-pages"
+        echo "Pushed HTML report to gh-pages"
 
     # Send email notification with link to the backup report using Sendinblue API
     - name: Send email with report link using Sendinblue API
