@@ -81,12 +81,14 @@ jobs:
           git rebase origin/main || git rebase --skip  # Skip the conflicting commit if there's a rebase error
         fi
 
-        # Copy the newly generated HTML report to the root of the gh-pages branch
-        cp -r ../playwright-html-report/index.html ./index.html  # Copy the HTML report to the root
-
-        # Debug: List the files again after copying the HTML report
-        echo "Files in gh-pages after copying HTML report:"
-        ls -alh
+        # Check if the HTML report exists and copy it to the gh-pages branch
+        if [ -f "../playwright-html-report/index.html" ]; then
+          cp -r ../playwright-html-report/index.html ./index.html  # Copy the HTML report to the root
+          echo "HTML report copied to gh-pages"
+        else
+          echo "Error: index.html not found. Skipping copy to gh-pages."
+          exit 1
+        fi
 
         # Add and commit the new files to the gh-pages branch
         git add index.html
