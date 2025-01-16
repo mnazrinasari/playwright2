@@ -122,8 +122,10 @@ jobs:
         SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
         EMAIL_SUBJECT="Playwright Tests Completed - HTML Report"
         
-        # Use the backup file path from the previous step
-        BACKUP_FILE_URL="https://mnazrinasari.github.io/playwright2/$BACKUP_FILE"
+        # Ensure the backup file is in the correct GitHub Pages folder
+        BACKUP_FILE_PATH="${{ env.BACKUP_FILE_PATH }}"
+        BACKUP_FILE_URL="https://mnazrinasari.github.io/playwright2/$BACKUP_FILE_PATH"  # Ensure correct URL path
+
         EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $BACKUP_FILE_URL"
 
         # Prepare the email payload and send using Sendinblue API
