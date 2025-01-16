@@ -128,7 +128,7 @@ jobs:
 
         EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $BACKUP_FILE_URL"
 
-        # Prepare the email payload and send using Sendinblue API
+        # Prepare the email payload and send using Sendinblue API--
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
           -H "api-key: $SENDINBLUE_API_KEY" \
           -H "Content-Type: application/json" \
