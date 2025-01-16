@@ -1,10 +1,11 @@
 Brief information about this project:
 1.POM implementation for code reuseablity/maintainability
 2.Customn fixture for steps definition and code resuseablity/maintainability
-3.GitHub actions for automated workflow to tiggering automatic run and sending daily report at 9 GMT
+3.GitHub actions for automated workflow tiggering automatic run upon new push or automated daily run 9GM that fire html report
 4.Test data maintained through excel file for easy maintanence 
 5.Custom config loader for environment and test account parameterization
 6.Parallel test setup with mutiple workers for speedy execution
+7.Customized html report implementation
 
 How to setup and run the test locally?
 Prerequisite: Install Node.js
