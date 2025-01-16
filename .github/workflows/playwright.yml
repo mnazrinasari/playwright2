@@ -30,6 +30,17 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
+    # Create a timestamped backup of index.html with a unique name
+    - name: Create a unique backup directory with timestamp
+      id: backup
+      run: |
+        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
+        mv playwright-html-report/index.html "$BACKUP_FILE"
+        echo "Backup created with name: $BACKUP_FILE"
+        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV  # Saving the path to the backup file as an environment variable
+        ls -alh "$BACKUP_FILE"
+
     # Upload the latest HTML report as artifact (for future reference)
     - name: Upload the latest HTML report as artifact
       uses: actions/upload-artifact@v4
@@ -67,20 +78,28 @@ jobs:
           git checkout gh-pages
           
           # Rebase the gh-pages branch onto main
-          git rebase origin/main || git rebase --skip  # Skip the conflicting commit if there's a rebase error
+          git rebase origin/main
+
+          # If there are conflicts during rebase, handle them here
+          if [ $? -ne 0 ]; then
+            echo "There are conflicts during rebase. Please resolve them manually."
+            exit 1
+          fi
         fi
 
-        # Check if the HTML report exists and copy it to the gh-pages branch
-        if [ -f "../playwright-html-report/index.html" ]; then
-          cp -r ../playwright-html-report/index.html ./index.html  # Copy the HTML report to the root
-          echo "HTML report copied to gh-pages"
-        else
-          echo "Error: index.html not found. Skipping copy to gh-pages."
-          exit 1
-        fi
+        # Check if playwright-html-report exists before copying (if needed)
+        echo "Listing files before copying HTML report:"
+        ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
+
+        # Copy the newly generated HTML report to the root of the gh-pages branch
+        cp -r ../playwright-html-report ./  # Copy the HTML report to the current directory
+
+        # Debug: List the files again after copying the HTML report
+        echo "Files in gh-pages after copying HTML report:"
+        ls -alh
 
         # Add and commit the new files to the gh-pages branch
-        git add index.html
+        git add playwright-html-report
         git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Force-push the changes to the gh-pages branch
@@ -88,34 +107,6 @@ jobs:
 
         # Debug: Confirm successful push
         echo "Pushed HTML report to gh-pages"
-
-    # Create a timestamped backup of index.html with a unique name (moved here after deployment)
-    - name: Create a unique backup directory with timestamp
-      id: backup
-      run: |
-        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
-        mv playwright-html-report/index.html "$BACKUP_FILE"
-        echo "Backup created with name: $BACKUP_FILE"
-        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV  # Saving the path to the backup file as an environment variable
-        ls -alh "$BACKUP_FILE"
-
-    # Remove index.html from the main branch after it's deployed to gh-pages
-    - name: Remove index.html from the main branch
-      if: ${{ always() }}
-      run: |
-        # Checkout to the main branch
-        git checkout main
-
-        # Check if the file exists before removing it
-        if [ -f "playwright-html-report/index.html" ]; then
-          echo "Removing index.html from main branch..."
-          git rm playwright-html-report/index.html
-          git commit -m "Remove index.html from main branch after deployment to gh-pages"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
-        else
-          echo "index.html does not exist in the main branch. Skipping removal."
-        fi
 
     # Send email notification with link to the backup report using Sendinblue API
     - name: Send email with report link using Sendinblue API
