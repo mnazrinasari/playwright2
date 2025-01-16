@@ -82,8 +82,8 @@ jobs:
 
           # If there are conflicts during rebase, handle them here
           if [ $? -ne 0 ]; then
-            echo "There are conflicts during rebase. Please resolve them manually."
-            exit 1
+            echo "There are conflicts during rebase. Skipping commit that conflicts."
+            git rebase --skip  # Skip the conflicting commit
           fi
         fi
 
@@ -108,7 +108,7 @@ jobs:
         # Debug: Confirm successful push
         echo "Pushed HTML report to gh-pages"
 
-    # Remove index.html from main branch after it's deployed to gh-pages
+    # Remove index.html from the main branch after it's deployed to gh-pages
     - name: Remove index.html from the main branch
       if: ${{ always() }}
       run: |
