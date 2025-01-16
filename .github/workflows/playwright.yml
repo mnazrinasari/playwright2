@@ -92,14 +92,14 @@ jobs:
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
         # Copy the newly generated HTML report to the root of the gh-pages branch
-        cp -r ../playwright-html-report ./  # Copy the HTML report to the current directory
+        cp -r ../playwright-html-report/index.html ./index.html  # Copy the HTML report to the root
 
         # Debug: List the files again after copying the HTML report
         echo "Files in gh-pages after copying HTML report:"
         ls -alh
 
         # Add and commit the new files to the gh-pages branch
-        git add playwright-html-report
+        git add index.html
         git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Force-push the changes to the gh-pages branch
