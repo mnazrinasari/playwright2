@@ -30,6 +30,25 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
+    # Create a backup of index.html with a timestamped name and move to gh-pages
+    - name: Create and move index.html and backup
+      id: backup
+      run: |
+        # Get the current timestamp
+        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+
+        # Set the paths for index.html and the backup
+        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
+        ORIGINAL_FILE="playwright-html-report/index.html"
+
+        # Backup the index.html with timestamp
+        mv $ORIGINAL_FILE $BACKUP_FILE
+        echo "Backup created with name: $BACKUP_FILE"
+        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV  # Saving the backup file path
+
+        # List the files to confirm backup
+        ls -alh $BACKUP_FILE
+
     # Upload the latest HTML report as artifact (for future reference)
     - name: Upload the latest HTML report as artifact
       uses: actions/upload-artifact@v4
@@ -39,7 +58,7 @@ jobs:
         retention-days: 30
 
     # Deploy HTML report to GitHub Pages (gh-pages)
-    - name: Deploy HTML report to GitHub Pages
+    - name: Deploy HTML report and backup to GitHub Pages
       if: ${{ always() }}
       run: |
         # Set up Git configuration for gh-pages deployment
@@ -77,27 +96,30 @@ jobs:
         fi
 
         # Check if playwright-html-report exists before copying (if needed)
-        echo "Listing files before copying HTML report:"
+        echo "Listing files before copying HTML reports:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the newly generated HTML report to the root of the gh-pages branch
-        cp -r ../playwright-html-report/index.html ./index.html  # Copy the HTML report to the root
+        # Copy the original index.html to the root of the gh-pages branch
+        cp -r ../playwright-html-report/index.html ./index.html  # Copy the original index.html
 
-        # Debug: List the files again after copying the HTML report
-        echo "Files in gh-pages after copying HTML report:"
+        # Copy the timestamped backup to the root of the gh-pages branch
+        cp -r ../playwright-html-report/$BACKUP_FILE ./  # Copy the backup with timestamp
+
+        # Debug: List the files again after copying the HTML reports
+        echo "Files in gh-pages after copying HTML reports:"
         ls -alh
 
         # Add and commit the new files to the gh-pages branch
-        git add index.html
-        git commit -m "Deploy updated HTML report" || echo "No changes to commit"
+        git add index.html $BACKUP_FILE
+        git commit -m "Deploy updated HTML report and backup" || echo "No changes to commit"
 
         # Force-push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force
 
         # Debug: Confirm successful push
-        echo "Pushed HTML report to gh-pages"
+        echo "Pushed HTML report and backup to gh-pages"
 
-    # Send email notification with link to the report using Sendinblue API
+    # Send email notification with link to the backup report using Sendinblue API
     - name: Send email with report link using Sendinblue API
       if: ${{ always() }}
       run: |
@@ -112,9 +134,10 @@ jobs:
         EMAIL_SUBJECT="Playwright Tests Completed - HTML Report"
         
         # Ensure the backup file is in the correct GitHub Pages folder
-        REPORT_URL="https://mnazrinasari.github.io/playwright2/index.html"  # The latest report file
+        BACKUP_FILE_PATH="${{ env.BACKUP_FILE_PATH }}"
+        BACKUP_FILE_URL="https://mnazrinasari.github.io/playwright2/$BACKUP_FILE_PATH"  # The backup URL path
 
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $REPORT_URL"
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $BACKUP_FILE_URL"
 
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
