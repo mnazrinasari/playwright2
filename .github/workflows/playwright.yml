@@ -30,17 +30,6 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
-    # Create a timestamped backup of index.html with a unique name
-    - name: Create a unique backup directory with timestamp
-      id: backup
-      run: |
-        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
-        mv playwright-html-report/index.html "$BACKUP_FILE"
-        echo "Backup created with name: $BACKUP_FILE"
-        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV  # Saving the path to the backup file as an environment variable
-        ls -alh "$BACKUP_FILE"
-
     # Upload the latest HTML report as artifact (for future reference)
     - name: Upload the latest HTML report as artifact
       uses: actions/upload-artifact@v4
@@ -91,38 +80,24 @@ jobs:
         echo "Listing files before copying HTML report:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the latest index.html to the root of the gh-pages branch
-        if [ -f "../playwright-html-report/index.html" ]; then
-          cp -r ../playwright-html-report/index.html ./index.html  # Copy the latest HTML report to the root
-          echo "Copied latest index.html to gh-pages."
-        else
-          echo "Error: index.html not found. Skipping copy to gh-pages."
-          exit 1
-        fi
+        # Copy the newly generated HTML report to the root of the gh-pages branch
+        cp -r ../playwright-html-report/index.html ./index.html  # Copy the HTML report to the root
 
-        # Copy the backup file (timestamped file) to gh-pages
-        if [ -f "../playwright-html-report/index_$TIMESTAMP.html" ]; then
-          cp -r "../playwright-html-report/index_$TIMESTAMP.html" ./index_backup_$TIMESTAMP.html
-          echo "Backup report copied to gh-pages."
-        else
-          echo "Error: Backup file not found. Skipping backup copy to gh-pages."
-        fi
-
-        # Debug: List the files again after copying the HTML report and backup
-        echo "Files in gh-pages after copying HTML report and backup:"
+        # Debug: List the files again after copying the HTML report
+        echo "Files in gh-pages after copying HTML report:"
         ls -alh
 
         # Add and commit the new files to the gh-pages branch
-        git add index.html index_backup_$TIMESTAMP.html
-        git commit -m "Deploy updated HTML report and backup" || echo "No changes to commit"
+        git add index.html
+        git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Force-push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force
 
         # Debug: Confirm successful push
-        echo "Pushed HTML report and backup to gh-pages"
+        echo "Pushed HTML report to gh-pages"
 
-    # Send email notification with link to the backup report using Sendinblue API
+    # Send email notification with link to the report using Sendinblue API
     - name: Send email with report link using Sendinblue API
       if: ${{ always() }}
       run: |
@@ -137,10 +112,9 @@ jobs:
         EMAIL_SUBJECT="Playwright Tests Completed - HTML Report"
         
         # Ensure the backup file is in the correct GitHub Pages folder
-        BACKUP_FILE_PATH="${{ env.BACKUP_FILE_PATH }}"
-        BACKUP_FILE_URL="https://mnazrinasari.github.io/playwright2/$BACKUP_FILE_PATH"  # Ensure correct URL path
+        REPORT_URL="https://mnazrinasari.github.io/playwright2/index.html"  # The latest report file
 
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $BACKUP_FILE_URL"
+        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $REPORT_URL"
 
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
