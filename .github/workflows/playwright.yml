@@ -30,35 +30,8 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
 
-    # Create a backup of index.html with a timestamped name and move to gh-pages
-    - name: Create and move index.html and backup
-      id: backup
-      run: |
-        # Get the current timestamp
-        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-
-        # Set the paths for index.html and the backup
-        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
-        ORIGINAL_FILE="playwright-html-report/index.html"
-
-        # Backup the index.html with timestamp
-        mv $ORIGINAL_FILE $BACKUP_FILE
-        echo "Backup created with name: $BACKUP_FILE"
-        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV  # Saving the backup file path
-
-        # List the files to confirm backup
-        ls -alh $BACKUP_FILE
-
-    # Upload the latest HTML report as artifact (for future reference)
-    - name: Upload the latest HTML report as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: latest-html-report
-        path: playwright-html-report/index.html
-        retention-days: 30
-
-    # Deploy HTML report to GitHub Pages (gh-pages)
-    - name: Deploy HTML report and backup to GitHub Pages
+    # Deploy the index.html file to gh-pages branch
+    - name: Deploy HTML report to GitHub Pages
       if: ${{ always() }}
       run: |
         # Set up Git configuration for gh-pages deployment
@@ -85,39 +58,60 @@ jobs:
           # Check out the existing gh-pages branch from remote
           git checkout gh-pages
           
-          # Rebase the gh-pages branch onto main
-          git rebase origin/main
+          # Sync gh-pages with the latest changes from main
+          git pull origin main
 
-          # If there are conflicts during rebase, handle them here
+          # If there are conflicts during the merge, handle them here
           if [ $? -ne 0 ]; then
-            echo "There are conflicts during rebase. Please resolve them manually."
+            echo "There are conflicts during merge. Please resolve them manually."
             exit 1
           fi
         fi
 
         # Check if playwright-html-report exists before copying (if needed)
-        echo "Listing files before copying HTML reports:"
+        echo "Listing files before copying HTML report:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the original index.html to the root of the gh-pages branch
+        # Copy the newly generated index.html to the root of the gh-pages branch
         cp -r ../playwright-html-report/index.html ./index.html  # Copy the original index.html
 
-        # Copy the timestamped backup to the root of the gh-pages branch
-        cp -r ../playwright-html-report/$BACKUP_FILE ./  # Copy the backup with timestamp
-
-        # Debug: List the files again after copying the HTML reports
-        echo "Files in gh-pages after copying HTML reports:"
-        ls -alh
-
         # Add and commit the new files to the gh-pages branch
-        git add index.html $BACKUP_FILE
-        git commit -m "Deploy updated HTML report and backup" || echo "No changes to commit"
+        git add index.html
+        git commit -m "Deploy updated HTML report" || echo "No changes to commit"
 
         # Force-push the changes to the gh-pages branch
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force
 
         # Debug: Confirm successful push
-        echo "Pushed HTML report and backup to gh-pages"
+        echo "Pushed HTML report to gh-pages"
+
+    # Create a backup of the index.html after it's moved to gh-pages
+    - name: Create a backup of index.html with timestamp
+      if: ${{ always() }}
+      run: |
+        # Get the current timestamp
+        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+
+        # Set the path for the backup file
+        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
+
+        # Copy the current index.html to the backup location
+        cp ./index.html $BACKUP_FILE
+        echo "Backup created with name: $BACKUP_FILE"
+
+        # List the files to confirm backup
+        ls -alh $BACKUP_FILE
+
+        # Save the backup file path to the environment variable
+        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV
+
+    # Upload the backup as artifact (for future reference)
+    - name: Upload the backup HTML report as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backup-html-report
+        path: playwright-html-report/index_$TIMESTAMP.html
+        retention-days: 30
 
     # Send email notification with link to the backup report using Sendinblue API
     - name: Send email with report link using Sendinblue API
