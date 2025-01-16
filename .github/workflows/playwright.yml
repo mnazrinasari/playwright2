@@ -38,7 +38,7 @@ jobs:
         BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
         mv playwright-html-report/index.html "$BACKUP_FILE"
         echo "Backup created with name: $BACKUP_FILE"
-        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV
+        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV  # Saving the path to the backup file as an environment variable
         ls -alh "$BACKUP_FILE"
 
     # Upload the latest HTML report as artifact (for future reference)
