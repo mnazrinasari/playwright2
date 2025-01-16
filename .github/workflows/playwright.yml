@@ -108,6 +108,22 @@ jobs:
         # Debug: Confirm successful push
         echo "Pushed HTML report to gh-pages"
 
+    # Remove index.html from main branch after it's deployed to gh-pages
+    - name: Remove index.html from the main branch
+      if: ${{ always() }}
+      run: |
+        # Checkout to the main branch
+        git checkout main
+
+        # Remove index.html from the main branch
+        git rm playwright-html-report/index.html
+
+        # Commit the removal
+        git commit -m "Remove index.html from main branch after deployment to gh-pages"
+
+        # Push the changes to the main branch
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
+
     # Send email notification with link to the backup report using Sendinblue API
     - name: Send email with report link using Sendinblue API
       if: ${{ always() }}
@@ -128,7 +144,7 @@ jobs:
 
         EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $BACKUP_FILE_URL"
 
-        # Prepare the email payload and send using Sendinblue API--
+        # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
           -H "api-key: $SENDINBLUE_API_KEY" \
           -H "Content-Type: application/json" \
