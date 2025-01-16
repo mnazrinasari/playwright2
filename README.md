@@ -6,7 +6,9 @@ Brief information about this project:
 5. Custom config loader for environment and test account parameterization
 6. Parallel test setup with mutiple workers for speedy execution
 7. Customized html report implementation
-8. Latest report can be viewed from this link https://mnazrinasari.github.io/playwright2/playwright-html-report/index.html
+8. Latest report can be viewed from disposable mailbox below
+https://mailsac.com/inbox/mnazrinasari%40mailsac.com
+
 
 How to setup and run the test locally?
 Prerequisite: Install Node.js
