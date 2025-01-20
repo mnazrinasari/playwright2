@@ -1,6 +1,6 @@
 Brief information about this project:
 1. POM implementation for code reuseablity/maintainability
-2. Customn fixture for steps definition and code resuseablity/maintainability
+2. Custom fixture for steps definition and code resuseablity/maintainability
 3. GitHub actions for automated workflow tiggering automatic run upon new push or automated daily run 9GMT that fire html report
 4. Test data maintained through excel file for easy maintanence 
 5. Custom config loader for environment and test account parameterization
