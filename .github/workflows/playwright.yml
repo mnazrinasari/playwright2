@@ -1,170 +1,317 @@
-name: Playwright Tests with Static HTML Report and Sendinblue Email
+name: Deploy Playwright Report to GitHub Pages
 
 on:
   push:
-    branches: [main, master]
+    branches: [ main ]
   pull_request:
-    branches: [main, master]
+    branches: [ main ]
+  # Allow manual triggering
   workflow_dispatch:
-  schedule:
-    - cron: '0 9 * * *'  # Trigger every day at 9 AM UTC
+
+# Set permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test:
-    timeout-minutes: 60
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
-
-    - uses: actions/setup-node@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        node-version: lts/*
-
+        node-version: '18'
+        cache: 'npm'
+    
     - name: Install dependencies
       run: npm ci
-
-    - name: Install Playwright Browsers
+    
+    - name: Install Playwright browsers
       run: npx playwright install --with-deps
-
+    
     - name: Run Playwright tests
-      # Continue even if tests fail - don't stop the workflow
+      run: npm run test
       continue-on-error: true
-      run: npx playwright test
-
-    # Create a timestamped backup of index.html with a unique name
-    - name: Create a unique backup directory with timestamp
-      id: backup
-      # Always run this step regardless of test results
+    
+    - name: Compress HTML report
       if: always()
       run: |
-        TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-        # Check if the report was generated
-        if [ -f "playwright-html-report/index.html" ]; then
-          BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
-          mv playwright-html-report/index.html "$BACKUP_FILE"
-          echo "Backup created with name: $BACKUP_FILE"
-          echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV
-          ls -alh "$BACKUP_FILE"
-        else
-          echo "No HTML report found - tests may have failed to generate report"
-          # Create a dummy backup file path for consistency
-          echo "BACKUP_FILE_PATH=playwright-html-report/index_${TIMESTAMP}_no_report.html" >> $GITHUB_ENV
-        fi
-
-    # Upload the latest HTML report as artifact (for future reference)
-    - name: Upload the latest HTML report as artifact
-      uses: actions/upload-artifact@v4
-      # Always try to upload if report exists
-      if: always()
-      with:
-        name: latest-html-report
-        path: playwright-html-report/
-        retention-days: 30
-
-    # Deploy HTML report to GitHub Pages (gh-pages)
-    - name: Deploy HTML report to GitHub Pages
-      # Always run this step regardless of test results
-      if: always()
-      run: |
-        # Set up Git configuration for gh-pages deployment
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-
-        # Clone the repository using GITHUB_TOKEN for authentication
-        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git github-pages
-        cd github-pages
-
-        # Fetch the latest changes from the remote repository
-        git fetch origin
-
-        # Check if the gh-pages branch exists remotely
-        if ! git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-          echo "gh-pages branch does not exist on remote. Creating it from main..."
-          # Create gh-pages branch locally from main
-          git checkout -b gh-pages origin/main
-          # Push the new gh-pages branch to the remote
-          git push -u origin gh-pages
-        else
-          echo "gh-pages branch exists on remote. Syncing with remote..."
-
-          # Check out the existing gh-pages branch from remote
-          git checkout gh-pages
+        # Create compressed version of the HTML report
+        if [ -f "playwright-report/index.html" ]; then
+          echo "Original report size:"
+          ls -lh playwright-report/index.html
           
-          # Rebase the gh-pages branch onto main
-          git rebase origin/main
-
-          # If there are conflicts during rebase, handle them here
-          if [ $? -ne 0 ]; then
-            echo "There are conflicts during rebase. Please resolve them manually."
-            exit 1
-          fi
-        fi
-
-        # Check if playwright-html-report exists before copying
-        echo "Listing files before copying HTML report:"
-        ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
-
-        # Copy the HTML report if it exists
-        if [ -d "../playwright-html-report" ]; then
-          cp -r ../playwright-html-report ./
-          echo "HTML report copied successfully"
+          # Compress the main HTML file
+          gzip -c playwright-report/index.html > playwright-report/index.html.gz
+          
+          # Create a lightweight HTML file that serves the compressed version
+          cat > playwright-report/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Playwright Test Report</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    line-height: 1.6;
+                }
+                .container {
+                    text-align: center;
+                    margin-top: 100px;
+                }
+                .btn {
+                    display: inline-block;
+                    padding: 12px 24px;
+                    background: #0969da;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    margin: 10px;
+                    transition: background 0.2s;
+                }
+                .btn:hover {
+                    background: #0860ca;
+                }
+                .info {
+                    background: #f6f8fa;
+                    border: 1px solid #d1d9e0;
+                    border-radius: 6px;
+                    padding: 16px;
+                    margin: 20px 0;
+                    text-align: left;
+                }
+                .timestamp {
+                    color: #656d76;
+                    font-size: 0.9em;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🎭 Playwright Test Report</h1>
+                <p>Test report generated on <span class="timestamp">DATE_PLACEHOLDER</span></p>
+                
+                <div class="info">
+                    <h3>📊 Quick Access</h3>
+                    <p>The full interactive report is available in compressed format to improve loading times.</p>
+                </div>
+                
+                <a href="report.html" class="btn">📋 View Full Report</a>
+                <a href="index.html.gz" class="btn" download>⬇️ Download Report</a>
+            </div>
+            
+            <script>
+                // Replace date placeholder
+                document.querySelector('.timestamp').textContent = new Date().toLocaleString();
+                
+                // Check if browser supports compressed content
+                if (window.fetch) {
+                    fetch('index.html.gz')
+                        .then(response => {
+                            if (response.ok) {
+                                console.log('Compressed report available');
+                            }
+                        })
+                        .catch(err => console.log('Compressed report not available'));
+                }
+            </script>
+        </body>
+        </html>
+        EOF
+          
+          # Create the actual report viewer
+          cat > playwright-report/report.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Loading Playwright Report...</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    background: #f6f8fa;
+                }
+                .loader {
+                    text-align: center;
+                    margin-top: 100px;
+                }
+                .spinner {
+                    border: 4px solid #f3f3f3;
+                    border-top: 4px solid #0969da;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 20px;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                .error {
+                    color: #d1242f;
+                    background: #fff;
+                    border: 1px solid #d1242f;
+                    border-radius: 6px;
+                    padding: 16px;
+                    margin: 20px;
+                    display: none;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="loader">
+                <div class="spinner"></div>
+                <p>Loading compressed report...</p>
+            </div>
+            <div class="error" id="error">
+                <h3>❌ Error Loading Report</h3>
+                <p>Unable to load the compressed report. You can try <a href="index.html.gz" download>downloading it directly</a>.</p>
+            </div>
+            
+            <script>
+                async function loadCompressedReport() {
+                    try {
+                        const response = await fetch('index.html.gz');
+                        if (!response.ok) throw new Error('Failed to fetch compressed report');
+                        
+                        const compressedData = await response.arrayBuffer();
+                        
+                        // For modern browsers, we can decompress using streams
+                        if ('DecompressionStream' in window) {
+                            const stream = new DecompressionStream('gzip');
+                            const decompressedResponse = new Response(
+                                new Response(compressedData).body.pipeThrough(stream)
+                            );
+                            const html = await decompressedResponse.text();
+                            
+                            // Replace current document with decompressed HTML
+                            document.open();
+                            document.write(html);
+                            document.close();
+                        } else {
+                            // Fallback: redirect to download
+                            throw new Error('Browser does not support decompression');
+                        }
+                    } catch (error) {
+                        console.error('Error loading compressed report:', error);
+                        document.querySelector('.loader').style.display = 'none';
+                        document.querySelector('.error').style.display = 'block';
+                    }
+                }
+                
+                // Load the compressed report
+                loadCompressedReport();
+            </script>
+        </body>
+        </html>
+        EOF
+          
+          echo "Compressed report size:"
+          ls -lh playwright-report/index.html.gz
+          
+          echo "New index.html size:"
+          ls -lh playwright-report/index.html
         else
-          echo "No HTML report to copy - creating placeholder"
-          mkdir -p playwright-html-report
-          echo "<html><body><h1>Test Report Not Available</h1><p>Tests may have failed to generate a report.</p></body></html>" > playwright-html-report/index.html
+          echo "No HTML report found to compress"
         fi
-
-        # Debug: List the files again after copying the HTML report
-        echo "Files in gh-pages after copying HTML report:"
-        ls -alh
-
-        # Add and commit the new files to the gh-pages branch
-        git add playwright-html-report
-        git commit -m "Deploy updated HTML report" || echo "No changes to commit"
-
-        # Force-push the changes to the gh-pages branch
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages --force
-
-        # Debug: Confirm successful push
-        echo "Pushed HTML report to gh-pages"
-
-    # Send email notification with link to the backup report using Sendinblue API
-    - name: Send email with report link using Sendinblue API
-      # Always send email regardless of test results
+    
+    - name: Upload artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+    
+    - name: Set up Git configuration for gh-pages deployment
       if: always()
       run: |
-        # Install curl for API request
-        sudo apt-get update
-        sudo apt-get install -y curl
-
-        # Set environment variables from GitHub secrets
-        SENDINBLUE_API_KEY="${{ secrets.SENDINBLUE_API_KEY }}"
-        SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
-        SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
-        
-        # Determine email subject and body based on test results
-        if [ "${{ job.status }}" == "failure" ] || [ "${{ steps.test.outcome }}" == "failure" ]; then
-          EMAIL_SUBJECT="Playwright Tests Completed with Failures - HTML Report"
-          STATUS_MESSAGE="Some tests failed, but the report was generated successfully."
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+    
+    - name: Clone gh-pages branch
+      if: always()
+      run: |
+        git clone --single-branch --branch gh-pages https://github.com/${{ github.repository }} github-pages || {
+          echo "gh-pages branch doesn't exist, creating it..."
+          git clone https://github.com/${{ github.repository }} github-pages
+          cd github-pages
+          git checkout --orphan gh-pages
+          git rm -rf .
+          echo "# GitHub Pages" > README.md
+          git add README.md
+          git commit -m "Initial gh-pages commit"
+          git push origin gh-pages
+        }
+    
+    - name: Deploy to GitHub Pages
+      if: always()
+      run: |
+        # Copy compressed report to gh-pages directory
+        if [ -d "playwright-report" ]; then
+          echo "Copying compressed report to gh-pages..."
+          cp -r playwright-report/* github-pages/
+          
+          cd github-pages
+          
+          # Add timestamp to README
+          echo "# Playwright Test Reports" > README.md
+          echo "" >> README.md
+          echo "Last updated: $(date)" >> README.md
+          echo "" >> README.md
+          echo "## How to View Reports" >> README.md
+          echo "- **Quick View**: Visit the main page for a summary" >> README.md
+          echo "- **Full Report**: Click 'View Full Report' for the complete interactive report" >> README.md
+          echo "- **Download**: Download the compressed report file if needed" >> README.md
+          
+          # Set up git and commit
+          git add .
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Deploy compressed HTML report - $(date '+%Y-%m-%d %H:%M:%S')"
+            
+            # Retry push up to 3 times with exponential backoff
+            for i in {1..3}; do
+              echo "Attempting to push to gh-pages (attempt $i/3)..."
+              if git push origin gh-pages; then
+                echo "✅ Successfully pushed to gh-pages on attempt $i"
+                break
+              else
+                echo "❌ Push failed on attempt $i"
+                if [ $i -lt 3 ]; then
+                  sleep_time=$((2**i))
+                  echo "Waiting ${sleep_time} seconds before retry..."
+                  sleep $sleep_time
+                else
+                  echo "❌ All push attempts failed"
+                  exit 1
+                fi
+              fi
+            done
+          fi
         else
-          EMAIL_SUBJECT="Playwright Tests Completed Successfully - HTML Report"
-          STATUS_MESSAGE="All tests passed successfully."
+          echo "No playwright-report directory found"
         fi
-        
-        # Ensure the backup file is in the correct GitHub Pages folder
-        BACKUP_FILE_PATH="${{ env.BACKUP_FILE_PATH }}"
-        BACKUP_FILE_URL="https://mnazrinasari.github.io/playwright2/$BACKUP_FILE_PATH"
-
-        EMAIL_BODY="Your Playwright tests have completed. $STATUS_MESSAGE Check the report at: $BACKUP_FILE_URL"
-
-        # Prepare the email payload and send using Sendinblue API
-        curl -X POST https://api.sendinblue.com/v3/smtp/email \
-          -H "api-key: $SENDINBLUE_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "sender": { "email": "'"$SENDINBLUE_SENDER_EMAIL"'" },
-            "to": [ { "email": "'"$SENDINBLUE_RECIPIENT_EMAIL"'" } ],
-            "subject": "'"$EMAIL_SUBJECT"'",
-            "htmlContent": "<html><body><p>'"$EMAIL_BODY"'</p></body></html>"
-        }'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Output Pages URL
+      if: always()
+      run: |
+        echo "🚀 Report deployed to GitHub Pages!"
+        echo "📊 View at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        echo "📁 Repository: ${{ github.repository }}"
