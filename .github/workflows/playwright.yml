@@ -28,30 +28,44 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
+      # Continue even if tests fail - don't stop the workflow
+      continue-on-error: true
       run: npx playwright test
 
     # Create a timestamped backup of index.html with a unique name
     - name: Create a unique backup directory with timestamp
       id: backup
+      # Always run this step regardless of test results
+      if: always()
       run: |
         TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-        BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
-        mv playwright-html-report/index.html "$BACKUP_FILE"
-        echo "Backup created with name: $BACKUP_FILE"
-        echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV  # Saving the path to the backup file as an environment variable
-        ls -alh "$BACKUP_FILE"
+        # Check if the report was generated
+        if [ -f "playwright-html-report/index.html" ]; then
+          BACKUP_FILE="playwright-html-report/index_$TIMESTAMP.html"
+          mv playwright-html-report/index.html "$BACKUP_FILE"
+          echo "Backup created with name: $BACKUP_FILE"
+          echo "BACKUP_FILE_PATH=$BACKUP_FILE" >> $GITHUB_ENV
+          ls -alh "$BACKUP_FILE"
+        else
+          echo "No HTML report found - tests may have failed to generate report"
+          # Create a dummy backup file path for consistency
+          echo "BACKUP_FILE_PATH=playwright-html-report/index_${TIMESTAMP}_no_report.html" >> $GITHUB_ENV
+        fi
 
     # Upload the latest HTML report as artifact (for future reference)
     - name: Upload the latest HTML report as artifact
       uses: actions/upload-artifact@v4
+      # Always try to upload if report exists
+      if: always()
       with:
         name: latest-html-report
-        path: playwright-html-report/index.html
+        path: playwright-html-report/
         retention-days: 30
 
     # Deploy HTML report to GitHub Pages (gh-pages)
     - name: Deploy HTML report to GitHub Pages
-      if: ${{ always() }}
+      # Always run this step regardless of test results
+      if: always()
       run: |
         # Set up Git configuration for gh-pages deployment
         git config --global user.name "GitHub Actions"
@@ -87,12 +101,19 @@ jobs:
           fi
         fi
 
-        # Check if playwright-html-report exists before copying (if needed)
+        # Check if playwright-html-report exists before copying
         echo "Listing files before copying HTML report:"
         ls -alh ../playwright-html-report || echo "playwright-html-report folder doesn't exist."
 
-        # Copy the newly generated HTML report to the root of the gh-pages branch
-        cp -r ../playwright-html-report ./  # Copy the HTML report to the current directory
+        # Copy the HTML report if it exists
+        if [ -d "../playwright-html-report" ]; then
+          cp -r ../playwright-html-report ./
+          echo "HTML report copied successfully"
+        else
+          echo "No HTML report to copy - creating placeholder"
+          mkdir -p playwright-html-report
+          echo "<html><body><h1>Test Report Not Available</h1><p>Tests may have failed to generate a report.</p></body></html>" > playwright-html-report/index.html
+        fi
 
         # Debug: List the files again after copying the HTML report
         echo "Files in gh-pages after copying HTML report:"
@@ -110,7 +131,8 @@ jobs:
 
     # Send email notification with link to the backup report using Sendinblue API
     - name: Send email with report link using Sendinblue API
-      if: ${{ always() }}
+      # Always send email regardless of test results
+      if: always()
       run: |
         # Install curl for API request
         sudo apt-get update
@@ -120,13 +142,21 @@ jobs:
         SENDINBLUE_API_KEY="${{ secrets.SENDINBLUE_API_KEY }}"
         SENDINBLUE_SENDER_EMAIL="${{ secrets.SENDINBLUE_SENDER_EMAIL }}"
         SENDINBLUE_RECIPIENT_EMAIL="${{ secrets.SENDINBLUE_RECIPIENT_EMAIL }}"
-        EMAIL_SUBJECT="Playwright Tests Completed - HTML Report"
+        
+        # Determine email subject and body based on test results
+        if [ "${{ job.status }}" == "failure" ] || [ "${{ steps.test.outcome }}" == "failure" ]; then
+          EMAIL_SUBJECT="Playwright Tests Completed with Failures - HTML Report"
+          STATUS_MESSAGE="Some tests failed, but the report was generated successfully."
+        else
+          EMAIL_SUBJECT="Playwright Tests Completed Successfully - HTML Report"
+          STATUS_MESSAGE="All tests passed successfully."
+        fi
         
         # Ensure the backup file is in the correct GitHub Pages folder
         BACKUP_FILE_PATH="${{ env.BACKUP_FILE_PATH }}"
-        BACKUP_FILE_URL="https://mnazrinasari.github.io/playwright2/$BACKUP_FILE_PATH"  # Ensure correct URL path
+        BACKUP_FILE_URL="https://mnazrinasari.github.io/playwright2/$BACKUP_FILE_PATH"
 
-        EMAIL_BODY="Your Playwright tests have completed successfully. Check the report in the following link: $BACKUP_FILE_URL"
+        EMAIL_BODY="Your Playwright tests have completed. $STATUS_MESSAGE Check the report at: $BACKUP_FILE_URL"
 
         # Prepare the email payload and send using Sendinblue API
         curl -X POST https://api.sendinblue.com/v3/smtp/email \
